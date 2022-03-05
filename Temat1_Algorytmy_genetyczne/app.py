@@ -99,4 +99,14 @@ data = laod_data(EASY_DATASET[0],EASY_DATASET[1])
 env = Enviroment(data, 3, 3, 5)
 env.generate_random_population()
 print(str(env))
+
+data = laod_data(MEDIUM_DATASET[0],MEDIUM_DATASET[1])
+env = Enviroment(data, 1, 12, 5)
+env.generate_random_population()
+print(str(env))
+
+data = laod_data(HARD_DATASET[0],HARD_DATASET[1])
+env = Enviroment(data, 5, 6, 5)
+env.generate_random_population()
+print(str(env))
 pass
