@@ -1,5 +1,7 @@
 import json
+import itertools
 import random
+from re import L
 
 EASY_DATASET = ("./dane/easy_cost.json","./dane/easy_flow.json")
 MEDIUM_DATASET = ("./dane/flat_cost.json","./dane/flat_flow.json")
@@ -23,7 +25,7 @@ class Enviroment:
   
   def generate_random_population(self):
     self.population = []
-    for i in range(self.population_size):
+    for _ in range(self.population_size):
       self.population.append(Individual(self))
 
   @property
@@ -35,37 +37,46 @@ class Enviroment:
 
     return list(ids)
 
+  def __str__(self) -> str:
+    out = ""
+    for individual in self.population:
+      out += f"\nCost: {individual.adaptation}"
+      # out += str(individual)
+    
+    return out
+
 
 class Individual:
   def __init__(self, enviroment: Enviroment):
     self.enviroment = enviroment
     self._init_as_random()
-    self.individual_inner_build = None
 
   def _init_as_random(self):
+    self.individual_inner_build = {}
     nodes = self.enviroment.nodes_ids
-    total_size = self.enviroment.individual_height * self.enviroment.individual_width
-    
-    for i in range(len(nodes),total_size):
-      nodes.append(-1)
+    avalible_locations = list(itertools.product(
+      range(self.enviroment.individual_width), 
+      range(self.enviroment.individual_height)))
 
-    random.shuffle(nodes)
+    for node in nodes:
+      random_loc_index = random.randint(0,len(avalible_locations) - 1)
+      self.individual_inner_build[node] = avalible_locations[random_loc_index]
+      avalible_locations.remove(avalible_locations[random_loc_index])
     
-    self.individual_inner_build = [
-        [
-          nodes[col_no + self.enviroment.individual_width * row_no] 
-          for col_no in range(self.enviroment.individual_width)
-        ] 
-        for row_no in range(self.enviroment.individual_height)
-    ]
 
   @property
-  def przystosowanie(self):
-    for  in self.enviroment.flow_cost_edges:
-      
+  def adaptation(self) -> int:
+    total_cost = 0
+    for e in self.enviroment.flow_cost_edges:
+      (src_x, src_y) = self.individual_inner_build[e.source]
+      (dst_x, dst_y) = self.individual_inner_build[e.dest]
 
+      dist = abs(src_x - dst_x) + abs(src_y - dst_y)
+      total_cost = total_cost + dist * e.amount * e.cost
 
+    return total_cost
 
+          
 
 
 
@@ -87,4 +98,5 @@ def laod_data(cost_file_location: str, flow_file_location: str) -> list[FlowCost
 data = laod_data(EASY_DATASET[0],EASY_DATASET[1])
 env = Enviroment(data, 3, 3, 5)
 env.generate_random_population()
+print(str(env))
 pass
