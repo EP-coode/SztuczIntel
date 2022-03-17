@@ -1,10 +1,10 @@
-from filecmp import cmp
+import copy
 import json
 import itertools
 from math import floor
+from pickle import FALSE
 import random
 import functools
-import operator
 
 EASY_DATASET = ("./dane/easy_cost.json","./dane/easy_flow.json")
 MEDIUM_DATASET = ("./dane/flat_cost.json","./dane/flat_flow.json")
@@ -30,6 +30,9 @@ class Enviroment:
     self.population = []
     for _ in range(self.population_size):
       self.population.append(Individual(self))
+
+  def get_best_from_population(self):
+    return sorted(self.population, key= lambda i: i.adaptation, reverse=True)[0]
  
   def tournament(self, n):
     # parametr n z przedziału <0,1> określa procent rozmiaru populacji
@@ -93,6 +96,7 @@ class Individual:
 
   def _init_as_random(self):
     self.individual_inner_build = {}
+    self.genotype =  [-1 for e in range(self.enviroment.individual_width * self.enviroment.individual_height)]
     nodes = self.enviroment.nodes_ids
     avalible_locations = list(itertools.product(
       range(self.enviroment.individual_width), 
@@ -101,13 +105,68 @@ class Individual:
     for node in nodes:
       random_loc_index = random.randint(0,len(avalible_locations) - 1)
       self.individual_inner_build[node] = avalible_locations[random_loc_index]
+      self.genotype[avalible_locations[random_loc_index][0] * self.enviroment.individual_height + avalible_locations[random_loc_index][1]] = node
       avalible_locations.remove(avalible_locations[random_loc_index])
+
+  def crossover(self, individual, mutation_probability = 0.5, gen_mutation_probability = 0.5):
+    #Operator krzyżowania równomiernego
+    is_making_crossing = random.uniform(0, 1) < mutation_probability
+    if not is_making_crossing:
+      return (self, individual)
     
+    offspring1 = copy.deepcopy(self) 
+    offspring2 = copy.deepcopy(individual)
+    genotype_size = self.enviroment.individual_height * self.enviroment.individual_width
+    
+    for (gen1, gen2, gen_index) in zip(offspring1.genotype, offspring2.genotype, range(genotype_size)):
+      if gen1 == -1 and gen2 == -1:
+        continue
+
+      is_crossing_gen = random.uniform(0, 1) < gen_mutation_probability
+
+      if is_crossing_gen:
+        gen2_index = offspring1.genotype.index(gen2)
+        tmp = offspring1.genotype[gen_index] 
+        offspring1.genotype[gen_index] = gen2
+        offspring1.genotype[gen2_index] = tmp
+
+        gen1_index = offspring2.genotype.index(gen1)
+        tmp = offspring2.genotype[gen_index] 
+        offspring2.genotype[gen_index] = gen1
+        offspring2.genotype[gen1_index] = tmp
+
+    
+    offspring1.cost = self._cost()
+    offspring1.adaptation = 1 / offspring1.cost
+    offspring2.cost = self._cost()
+    offspring2.adaptation = 1 / offspring2.cost
+    return (offspring1, offspring2)
+
+
+  def mutate(self, probability_of_mutation = 0.1):
+    genotype_size = len(self.genotype)
+    for gen_index in range(genotype_size):
+      is_mutating = random.uniform(0, 1) < probability_of_mutation/2
+      if is_mutating:
+        gen_new_index = (gen_index + random.randint(0,genotype_size)) % genotype_size
+        tmp = self.genotype[gen_index]
+        self.genotype[gen_index] = self.genotype[gen_new_index]
+        self.genotype[gen_index] = tmp
+    
+    self.cost = self._cost()
+    self.adaptation = 1 / self.cost
+
+
   def _cost(self) -> int:
     total_cost = 0
     for e in self.enviroment.flow_cost_edges:
-      (src_x, src_y) = self.individual_inner_build[e.source]
-      (dst_x, dst_y) = self.individual_inner_build[e.dest]
+      src_index = self.genotype.index(e.source)
+      src_x = src_index%self.enviroment.individual_width
+      src_y = floor(src_index/self.enviroment.individual_width)
+
+      dst_index = self.genotype.index(e.dest)
+      dst_x = dst_index%self.enviroment.individual_width
+      dst_y = floor(dst_index/self.enviroment.individual_width)
 
       dist = abs(src_x - dst_x) + abs(src_y - dst_y)
       total_cost = total_cost + dist * e.amount * e.cost
@@ -136,15 +195,39 @@ def laod_data(cost_file_location: str, flow_file_location: str) -> list[FlowCost
     
   return flow_cost_list
 
-
-def testuj_dla_zestawu(dataset, width, height, population_size):
+def ag(dataset, width, height, population_size = 200, tournament_sample_size = 0.2, iterations = 30, mutation_probability = 0.2):
   data = laod_data(dataset[0],dataset[1])
   env = Enviroment(data, width, height, population_size)
   env.generate_random_population()
-  print(f"Wylosowany w turnieju: {str(env.tournament(1))} \n")
-  print(f"Wylosowany w ruletce: {str(env.roulette())} \n")
-  print(str(env)+"\n-----------------------")
 
-testuj_dla_zestawu(EASY_DATASET,3,3, 5)
-testuj_dla_zestawu(MEDIUM_DATASET, 1, 12, 5)
-testuj_dla_zestawu(HARD_DATASET, 5, 6, 5)
+  the_best = env.get_best_from_population()
+
+  for i in range(iterations):
+    env2 = Enviroment(data, width, height, population_size)
+    for i in range(len(env.population)):
+      p1 = env.roulette()
+      p2 = env.roulette()
+      o = p1.crossover(p2)[0]
+      o.mutate(mutation_probability)
+      env2.population.append(o)
+
+    if(env2.get_best_from_population().adaptation > the_best.adaptation):
+      the_best = env.get_best_from_population()
+      print("-- new optimum: " + str(the_best))
+
+    env = env2
+
+  print(the_best)
+
+
+
+print("-----------------------\nEASY SET: ")
+ag(EASY_DATASET,3,3)
+
+
+print("-----------------------\nMED SET: ")
+ag(MEDIUM_DATASET,1,12)
+
+
+print("-----------------------\nHARD SET: ")
+ag(HARD_DATASET,5,6)
