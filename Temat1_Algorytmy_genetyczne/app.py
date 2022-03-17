@@ -1,7 +1,10 @@
+from filecmp import cmp
 import json
 import itertools
+from math import floor
 import random
-from re import L
+import functools
+import operator
 
 EASY_DATASET = ("./dane/easy_cost.json","./dane/easy_flow.json")
 MEDIUM_DATASET = ("./dane/flat_cost.json","./dane/flat_flow.json")
@@ -27,6 +30,40 @@ class Enviroment:
     self.population = []
     for _ in range(self.population_size):
       self.population.append(Individual(self))
+ 
+  def tournament(self, n):
+    # parametr n z przedziału <0,1> określa procent rozmiaru populacji
+    tournament_size = floor(len(self.population) * n)
+
+    if tournament_size <= 0:
+      tournament_size = 1
+
+    tournament_candidats = random.sample(self.population, tournament_size)
+    best_candidate = sorted(tournament_candidats, key= lambda i: i.adaptation, reverse=True)[0]
+
+    return best_candidate
+    
+
+  def roulette(self):
+    rulette_board_size = functools.reduce(lambda acc, val: acc + val.adaptation, self.population, 0)
+    rullete_board_prev_breakpoint = 0
+    rullete_board_breakpoints = []
+
+    for i in self.population:
+      rullete_board_breakpoints.append(i.adaptation + rullete_board_prev_breakpoint)
+      rullete_board_prev_breakpoint = rullete_board_prev_breakpoint + i.adaptation
+    
+    rullete_stop_position = random.uniform(0,rulette_board_size)
+    winner_index = 0
+
+    for b in rullete_board_breakpoints:
+      if(rullete_stop_position <= b):
+        break
+
+      winner_index = winner_index + 1
+
+    return self.population[winner_index]
+
 
   @property
   def nodes_ids(self) -> list[int]:
@@ -40,7 +77,7 @@ class Enviroment:
   def __str__(self) -> str:
     out = ""
     for individual in self.population:
-      out += f"\nCost: {individual.adaptation}"
+      out += f"\nCost: {individual.cost}"
       # out += str(individual)
     
     return out
@@ -50,6 +87,9 @@ class Individual:
   def __init__(self, enviroment: Enviroment):
     self.enviroment = enviroment
     self._init_as_random()
+    self.cost = self._cost()
+    self.adaptation = 1 / self.cost
+
 
   def _init_as_random(self):
     self.individual_inner_build = {}
@@ -63,9 +103,7 @@ class Individual:
       self.individual_inner_build[node] = avalible_locations[random_loc_index]
       avalible_locations.remove(avalible_locations[random_loc_index])
     
-
-  @property
-  def adaptation(self) -> int:
+  def _cost(self) -> int:
     total_cost = 0
     for e in self.enviroment.flow_cost_edges:
       (src_x, src_y) = self.individual_inner_build[e.source]
@@ -75,6 +113,10 @@ class Individual:
       total_cost = total_cost + dist * e.amount * e.cost
 
     return total_cost
+
+  def __str__(self) -> str:
+    return f"\nCost: {self.cost}"
+        
 
           
 
@@ -95,18 +137,14 @@ def laod_data(cost_file_location: str, flow_file_location: str) -> list[FlowCost
   return flow_cost_list
 
 
-data = laod_data(EASY_DATASET[0],EASY_DATASET[1])
-env = Enviroment(data, 3, 3, 5)
-env.generate_random_population()
-print(str(env))
+def testuj_dla_zestawu(dataset, width, height, population_size):
+  data = laod_data(dataset[0],dataset[1])
+  env = Enviroment(data, width, height, population_size)
+  env.generate_random_population()
+  print(f"Wylosowany w turnieju: {str(env.tournament(1))} \n")
+  print(f"Wylosowany w ruletce: {str(env.roulette())} \n")
+  print(str(env)+"\n-----------------------")
 
-data = laod_data(MEDIUM_DATASET[0],MEDIUM_DATASET[1])
-env = Enviroment(data, 1, 12, 5)
-env.generate_random_population()
-print(str(env))
-
-data = laod_data(HARD_DATASET[0],HARD_DATASET[1])
-env = Enviroment(data, 5, 6, 5)
-env.generate_random_population()
-print(str(env))
-pass
+testuj_dla_zestawu(EASY_DATASET,3,3, 5)
+testuj_dla_zestawu(MEDIUM_DATASET, 1, 12, 5)
+testuj_dla_zestawu(HARD_DATASET, 5, 6, 5)
