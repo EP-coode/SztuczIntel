@@ -91,10 +91,9 @@ class Individual:
     def __init__(self, enviroment: Enviroment):
         self.enviroment = enviroment
         self._init_as_random()
-        self.cost = self._calculate_cost()
+        self._calculate_cost()
 
     def _init_as_random(self):
-        self.individual_inner_build = {}
         self.genotype = [-1 for e in range(
             self.enviroment.individual_width * self.enviroment.individual_height)]
         nodes = self.enviroment.nodes_ids
@@ -104,7 +103,6 @@ class Individual:
 
         for node in nodes:
             random_loc_index = random.randint(0, len(avalible_locations) - 1)
-            self.individual_inner_build[node] = avalible_locations[random_loc_index]
             self.genotype[avalible_locations[random_loc_index][0] *
                           self.enviroment.individual_height + avalible_locations[random_loc_index][1]] = node
             avalible_locations.remove(avalible_locations[random_loc_index])
@@ -137,8 +135,8 @@ class Individual:
                 offspring2.genotype[gen_index] = gen1
                 offspring2.genotype[gen1_index] = tmp
 
-        offspring1.cost = offspring1._calculate_cost()
-        offspring2.cost = offspring2._calculate_cost()
+        offspring1._calculate_cost()
+        offspring2._calculate_cost()
         return (offspring1, offspring2)
 
     def mutate(self, probability_of_gen_mutation=0.1):
@@ -156,7 +154,7 @@ class Individual:
         clone._calculate_cost()
         return clone
 
-    def _calculate_cost(self, adaptation_multier=20000) -> int:
+    def _calculate_cost(self, adaptation_multier=20000):
         total_cost = 0
         for e in self.enviroment.flow_cost_edges:
             src_index = self.genotype.index(e.source)
@@ -170,10 +168,8 @@ class Individual:
             dist = abs(src_x - dst_x) + abs(src_y - dst_y)
             total_cost = total_cost + dist * e.amount * e.cost
 
-            self.cost = total_cost
-            self.adaptation = adaptation_multier * 1 / total_cost
-
-        return total_cost
+        self.cost = total_cost
+        self.adaptation = adaptation_multier / total_cost
 
     def __str__(self) -> str:
         out = ""
@@ -248,6 +244,6 @@ random.seed(10)
 
 
 print("-----------------------\nHARD SET: ")
-ag(HARD_DATASET, 5, 6, 100, 0.2, 10, 0.1)
+ag(HARD_DATASET, 5, 6, 100, 0.2, 100, 0.1)
 
 # cProfile.run("ag(HARD_DATASET, 5, 6, 50, 0.2, 5, 0.1)")
