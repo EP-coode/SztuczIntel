@@ -5,10 +5,16 @@ import itertools
 from math import floor
 import random
 import functools
+import csv
+import sys
+import time
 
 EASY_DATASET = ("./dane/easy_cost.json", "./dane/easy_flow.json")
 MEDIUM_DATASET = ("./dane/flat_cost.json", "./dane/flat_flow.json")
 HARD_DATASET = ("./dane/hard_cost.json", "./dane/hard_flow.json")
+filename = sys.argv[1]
+start_time = time.time()
+CSV_HEADER = ["gen_no", "avg_cost", "min_cost", "max_cost", "time"]
 
 
 class FlowCostEdge:
@@ -196,38 +202,63 @@ def laod_data(cost_file_location: str, flow_file_location: str) -> list[FlowCost
     return flow_cost_list
 
 
-def ag(dataset, width, height, population_size=60, tournament_sample_size=0.2, iterations=10, mutation_probability=0.05):
+def write_pop_to_csv(f, population: list[Individual], generation_no):
+    global start_time
+    writer = csv.writer(f)
+    total_cost = 0
+    min_cost = population[0].cost
+    max_cost = population[0].cost
+    for individual in population:
+        if min_cost > individual.cost:
+            min_cost = individual.cost
+        if max_cost < individual.cost:
+            max_cost = individual.cost
+        total_cost = total_cost + individual.cost
+
+    writer.writerow([generation_no, total_cost /
+                    len(population), min_cost, max_cost, (time.time() - start_time) * 1000])
+
+
+def ag(dataset, width, height, population_size=60, tournament_sample_size=0.2, iterations=10, mutation_probability=0.05, roulette=True):
+    global filename
     data = laod_data(dataset[0], dataset[1])
     env = Enviroment(data, width, height, population_size)
     env.generate_random_population()
 
     the_best = env.get_best_from_population()
 
-    for i in range(iterations):
-        env2 = Enviroment(data, width, height, population_size)
-        print(
-            f"------------------------ new genration -----------------------{i}")
-        while population_size > len(env2.population):
-            p1 = env.roulette()
-            p2 = env.roulette()
-            (o1, o2) = p1.crossover(p2)
+    with open(filename, 'w', newline='') as f:
+        csv.writer(f).writerow(CSV_HEADER)
+        for i in range(iterations):
+            write_pop_to_csv(f, env.population, i)
+            env2 = Enviroment(data, width, height, population_size)
+            print(
+                f"------------------------ new genration -----------------------{i}")
+            while population_size > len(env2.population):
+                if roulette:
+                    p1 = env.roulette()
+                    p2 = env.roulette()
+                else:
+                    p1 = env.tournament(tournament_sample_size)
+                    p2 = env.tournament(tournament_sample_size)
+                (o1, o2) = p1.crossover(p2)
 
-            is_mutating = random.uniform(0, 1) < mutation_probability
-            if is_mutating:
-                o1 = o1.mutate()
+                is_mutating = random.uniform(0, 1) < mutation_probability
+                if is_mutating:
+                    o1 = o1.mutate()
 
-            is_mutating = random.uniform(0, 1) < mutation_probability
-            if is_mutating:
-                o2 = o2.mutate()
+                is_mutating = random.uniform(0, 1) < mutation_probability
+                if is_mutating:
+                    o2 = o2.mutate()
 
-            env2.population.append(o1)
-            env2.population.append(o2)
+                env2.population.append(o1)
+                env2.population.append(o2)
 
-        if(env2.get_best_from_population().cost < the_best.cost):
-            the_best = env2.get_best_from_population()
-            print("-- new optimum: " + str(the_best.cost))
+            if(env2.get_best_from_population().cost < the_best.cost):
+                the_best = env2.get_best_from_population()
+                print("-- new optimum: " + str(the_best.cost))
 
-        env = env2
+            env = env2
 
     print(the_best)
     print(the_best.cost)
@@ -244,6 +275,5 @@ random.seed(10)
 
 
 print("-----------------------\nHARD SET: ")
-ag(HARD_DATASET, 5, 6, 100, 0.2, 100, 0.1)
-
-# cProfile.run("ag(HARD_DATASET, 5, 6, 50, 0.2, 5, 0.1)")
+ag(HARD_DATASET, 5, 6, population_size=50, tournament_sample_size=0.2,
+   iterations=100, mutation_probability=0.3, roulette=False)
