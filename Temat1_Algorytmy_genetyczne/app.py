@@ -8,6 +8,7 @@ import functools
 import csv
 import sys
 import time
+import math
 
 EASY_DATASET = ("./dane/easy_cost.json", "./dane/easy_flow.json")
 MEDIUM_DATASET = ("./dane/flat_cost.json", "./dane/flat_flow.json")
@@ -56,14 +57,15 @@ class Enviroment:
 
     def roulette(self):
         rulette_board_size = functools.reduce(
-            lambda acc, val: acc + val.adaptation, self.population, 0)
+            lambda acc, val: acc + math.pow(val.adaptation, 5), self.population, 0)
         rullete_board_prev_breakpoint = 0
         rullete_board_breakpoints = []
 
         for i in self.population:
             rullete_board_breakpoints.append(
                 i.adaptation + rullete_board_prev_breakpoint)
-            rullete_board_prev_breakpoint = rullete_board_prev_breakpoint + i.adaptation
+            rullete_board_prev_breakpoint = rullete_board_prev_breakpoint + \
+                math.pow(i.adaptation, 5)
 
         rullete_stop_position = random.uniform(0, rulette_board_size)
         winner_index = 0
@@ -160,7 +162,11 @@ class Individual:
         clone._calculate_cost()
         return clone
 
-    def _calculate_cost(self, adaptation_multier=20000):
+    # pomaga wcelować funkcje homograficzną
+    # 3000
+    # 10_000
+    # 
+    def _calculate_cost(self, adaptation_multier=15_000):
         total_cost = 0
         for e in self.enviroment.flow_cost_edges:
             src_index = self.genotype.index(e.source)
@@ -219,7 +225,7 @@ def write_pop_to_csv(f, population: list[Individual], generation_no):
                     len(population), min_cost, max_cost, (time.time() - start_time) * 1000])
 
 
-def ag(dataset, width, height, population_size=60, tournament_sample_size=0.2, iterations=10, mutation_probability=0.05, roulette=True):
+def ag(dataset, width, height, population_size=60, tournament_sample_size=0.2, iterations=10, mutation_probability=0.05, gen_mut_prob=0.1, roulette=True):
     global filename
     data = laod_data(dataset[0], dataset[1])
     env = Enviroment(data, width, height, population_size)
@@ -245,11 +251,11 @@ def ag(dataset, width, height, population_size=60, tournament_sample_size=0.2, i
 
                 is_mutating = random.uniform(0, 1) < mutation_probability
                 if is_mutating:
-                    o1 = o1.mutate()
+                    o1 = o1.mutate(gen_mut_prob)
 
                 is_mutating = random.uniform(0, 1) < mutation_probability
                 if is_mutating:
-                    o2 = o2.mutate()
+                    o2 = o2.mutate(gen_mut_prob)
 
                 env2.population.append(o1)
                 env2.population.append(o2)
@@ -267,13 +273,14 @@ def ag(dataset, width, height, population_size=60, tournament_sample_size=0.2, i
 random.seed(10)
 
 # print("-----------------------\nEASY SET: ")
-# ag(EASY_DATASET, 3, 3, 50, 0.3, 10, 0.1)
+# ag(EASY_DATASET, 3, 3, population_size=50, tournament_sample_size=0.2,
+#    iterations=100, mutation_probability=0.4, gen_mut_prob=0.5, roulette=False)
+
+# print("-----------------------\nHARD SET: ")
+# ag(MEDIUM_DATASET, 1, 12, population_size=50, tournament_sample_size=0.1,
+#    iterations=100, mutation_probability=0.2, gen_mut_prob=0.1, roulette=False)
 
 
-# print("-----------------------\nMED SET: ")
-# ag(MEDIUM_DATASET,1,12,)
-
-
-print("-----------------------\nHARD SET: ")
-ag(HARD_DATASET, 5, 6, population_size=50, tournament_sample_size=0.2,
-   iterations=100, mutation_probability=0.3, roulette=False)
+# print("-----------------------\nHARD SET: ")
+# ag(HARD_DATASET, 5, 6, population_size=100, tournament_sample_size=0.1,
+#    iterations=200, mutation_probability=0.2, gen_mut_prob=0.2, roulette=True)
