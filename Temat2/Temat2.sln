@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Temat2_CSP", "Temat2_CSP.csproj", "{0F453EFF-7D73-4EC2-B71B-11E749BF85EC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSP", "CSP\CSP.csproj", "{BC5001F6-8EAF-4EAB-BEAC-3424FE7D5229}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,15 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0F453EFF-7D73-4EC2-B71B-11E749BF85EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0F453EFF-7D73-4EC2-B71B-11E749BF85EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0F453EFF-7D73-4EC2-B71B-11E749BF85EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0F453EFF-7D73-4EC2-B71B-11E749BF85EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC5001F6-8EAF-4EAB-BEAC-3424FE7D5229}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC5001F6-8EAF-4EAB-BEAC-3424FE7D5229}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC5001F6-8EAF-4EAB-BEAC-3424FE7D5229}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC5001F6-8EAF-4EAB-BEAC-3424FE7D5229}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {1DCDAE09-3955-46EB-B974-0A2DD43AF66A}
+		SolutionGuid = {63B75CD0-2530-49B4-BFCC-F5EC258502EF}
 	EndGlobalSection
 EndGlobal
