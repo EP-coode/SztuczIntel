@@ -165,7 +165,7 @@ class Individual:
     # pomaga wcelować funkcje homograficzną
     # 3000
     # 10_000
-    # 
+    #
     def _calculate_cost(self, adaptation_multier=15_000):
         total_cost = 0
         for e in self.enviroment.flow_cost_edges:
@@ -281,6 +281,6 @@ random.seed(10)
 #    iterations=100, mutation_probability=0.2, gen_mut_prob=0.1, roulette=False)
 
 
-# print("-----------------------\nHARD SET: ")
-# ag(HARD_DATASET, 5, 6, population_size=100, tournament_sample_size=0.1,
-#    iterations=200, mutation_probability=0.2, gen_mut_prob=0.2, roulette=True)
+print("-----------------------\nHARD SET: ")
+ag(HARD_DATASET, 5, 6, population_size=100, tournament_sample_size=0.2,
+   iterations=100, mutation_probability=0.2, gen_mut_prob=0.1, roulette=False)
