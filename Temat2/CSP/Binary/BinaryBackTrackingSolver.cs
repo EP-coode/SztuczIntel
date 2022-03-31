@@ -5,17 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 namespace Temat2_CSP.Binary;
 
-public class BackTracking
+public class BinaryBackTrackingSolver
 {
     public static char[] domain = new char[] { '0', '1' };
     public char[][] State { get; set; }
 
-    public BackTracking(char[][] initialState)
+    public BinaryBackTrackingSolver(char[][] initialState)
     {
         State = initialState;
     }
 
-    public BackTracking(BackTracking parent)
+    public BinaryBackTrackingSolver(BinaryBackTrackingSolver parent)
     {
         this.State = new char[parent.State.Length][];
 
@@ -29,10 +29,10 @@ public class BackTracking
         }
     }
 
-    public ICollection<BackTracking> Solve()
+    public ICollection<BinaryBackTrackingSolver> Solve()
     {
         var (x, y, found) = NextEmptySpot();
-        ICollection<BackTracking> sollutions = new List<BackTracking>();
+        ICollection<BinaryBackTrackingSolver> sollutions = new List<BinaryBackTrackingSolver>();
 
         if (!found)
         {
@@ -42,7 +42,7 @@ public class BackTracking
 
         foreach (char domainItem in domain)
         {
-            BackTracking child = new(this);
+            BinaryBackTrackingSolver child = new(this);
             child.State[y][x] = domainItem;
             if (child.isValid(x, y))
             {
