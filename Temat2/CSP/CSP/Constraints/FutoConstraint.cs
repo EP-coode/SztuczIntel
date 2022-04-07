@@ -40,9 +40,17 @@ public class FutoConstraint : IConstraint
         if (y > 0)
         {
             constraint = constraints[y * 2 - 1][x];
+            if (constraint == '<')
+            {
+                constraint = '>';
+            }
+            else if (constraint == '>')
+            {
+                constraint = '<';
+            }
             value2 = state[y - 1][x].Value;
 
-            if (!ConstraintValid(constraint, value2, state[y][x].Value))
+            if (!ConstraintValid(constraint, state[y][x].Value, value2))
                 return false;
         }
 
@@ -52,7 +60,7 @@ public class FutoConstraint : IConstraint
             constraint = constraints[y * 2 + 1][x];
             value2 = state[y + 1][x].Value;
 
-            if (!ConstraintValid(constraint, value2, state[y][x].Value))
+            if (!ConstraintValid(constraint, state[y][x].Value, value2))
                 return false;
         }
 
@@ -62,7 +70,7 @@ public class FutoConstraint : IConstraint
             constraint = constraints[y * 2][x];
             value2 = state[y][x + 1].Value;
 
-            if (!ConstraintValid(constraint, value2, state[y][x].Value))
+            if (!ConstraintValid(constraint, state[y][x].Value, value2))
                 return false;
         }
 
@@ -72,7 +80,17 @@ public class FutoConstraint : IConstraint
             constraint = constraints[y * 2][x - 1];
             value2 = state[y][x - 1].Value;
 
-            if (!ConstraintValid(constraint, value2, state[y][x].Value))
+
+            if (constraint == '<')
+            {
+                constraint = '>';
+            }
+            else if (constraint == '>')
+            {
+                constraint = '<';
+            }
+
+            if (!ConstraintValid(constraint, state[y][x].Value, value2))
                 return false;
         }
 

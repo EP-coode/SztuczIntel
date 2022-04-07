@@ -51,6 +51,47 @@ public class CSPProblem
         return (-1, -1, false);
     }
 
+    private (int, int, bool) NextEmptySmallestDomain()
+    {
+        List<(int, int, bool)> candidates = new();
+
+        for (int i = 0; i < state.Length; i++)
+        {
+            for (int j = 0; j < state[i].Length; j++)
+            {
+                if (state[i][j].Value == -1)
+                {
+                    candidates.Add((i, j, true));
+                }
+            }
+        }
+
+        (int, int, bool) bestCandidate = (-1,-1, false);
+
+        foreach (var candidate in candidates)
+        {
+            if (!bestCandidate.Item3)
+            {
+                bestCandidate = candidate;
+            }
+            else
+            {
+                int currentCandidateCout = state[bestCandidate.Item1][bestCandidate.Item2].Domain.Count();
+                int newCandidateCount = state[candidate.Item1][candidate.Item2].Domain.Count();
+                if (currentCandidateCout > newCandidateCount)
+                {
+                    bestCandidate = candidate;
+                }
+            }
+        }
+
+        //if (candidates.Count() > 0)
+        //    bestCandidate = candidates[0];
+
+
+        return bestCandidate;
+    }
+
     private bool isValid(int x, int y)
     {
         foreach (var constraint in constraints)
@@ -86,7 +127,7 @@ public class CSPProblem
 
     public ICollection<Variable[][]> Solve()
     {
-        var (y, x, found) = NextEmpty();
+        var (y, x, found) = NextEmptySmallestDomain();
         var sollutions = new List<Variable[][]>();
 
         if (!found)
@@ -101,8 +142,14 @@ public class CSPProblem
         {
             CSPProblem child = new(this);
 
-            child.state[y][x].Value = newValue;
+            //if (state[2][1].Value == 3 && state[2][2].Value == 2)
+            //{
+            //    Console.WriteLine("AAA");
+            //    Console.WriteLine(this);
+            //}
 
+
+            child.state[y][x].Value = newValue;
 
             bool isValid = child.isValid(x, y);
             bool isVaidFC = fc.FC(child.state, constraints, x, y);

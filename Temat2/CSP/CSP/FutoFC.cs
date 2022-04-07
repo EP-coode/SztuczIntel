@@ -99,7 +99,16 @@ public class FutoFC : FC
             value2 = state[y - 1][x];
             constraint = constraints[y * 2 - 1][x];
 
-            if(!VariableValid(constraint, value1, value2))
+            if (constraint == '<')
+            {
+                constraint = '>';
+            }
+            else if (constraint == '>')
+            {
+                constraint = '<';
+            }
+
+            if (!VariableValid(constraint, value1, value2))
                 return false;
            
         }
@@ -128,6 +137,16 @@ public class FutoFC : FC
         if (x > 0)
         {
             constraint = constraints[y * 2][x - 1];
+
+            if (constraint == '<')
+            {
+                constraint = '>';
+            }
+            else if (constraint == '>')
+            {
+                constraint = '<';
+            }
+
             value2 = state[y][x - 1];
 
             if (!VariableValid(constraint, value1, value2))
