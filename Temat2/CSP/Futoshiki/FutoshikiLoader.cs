@@ -18,9 +18,9 @@ public static class FutoshikiLoader
         List<Constraint<(int, int), int>> constraints = new List<Constraint<(int, int), int>> ();
         Dictionary<(int, int), ICollection<int>> domains = new Dictionary<(int, int), ICollection<int>>();
         Dictionary<(int, int), int > assigments = new Dictionary<(int, int), int> ();
-        int domainSize = data.Length;
+        int domainSize = data.Length/2 + 1;
 
-        // load variables, initial assigments and domains
+        // load variables, values and domains
         for(int y = 0; y < data.Length; y++)
         {
             for(int x=0;x< data[y].Length; x++)

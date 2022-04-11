@@ -20,7 +20,7 @@ internal class GreaterThan<V> : Constraint<V, int>
 
     public override bool Satisfied(Dictionary<V, int> assigment, V changedVariable)
     {
-        if(assigment[smaller] == -1 || assigment[larger] == -1)
+        if(!assigment.ContainsKey(smaller) || !assigment.ContainsKey(larger))
         {
             return true;
         }
