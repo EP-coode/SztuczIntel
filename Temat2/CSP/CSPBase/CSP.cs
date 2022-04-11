@@ -63,7 +63,7 @@ public class CSP<V, D>
     {
         foreach (var constraint in constraints[assignedVariable])
         {
-            if (!constraint.Satisfied(assigment))
+            if (!constraint.Satisfied(assigment, assignedVariable))
             {
                 return false;
             }

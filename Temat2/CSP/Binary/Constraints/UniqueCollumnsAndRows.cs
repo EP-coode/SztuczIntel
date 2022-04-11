@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CSP.CSP;
+using CSP.CSPBase;
 
 namespace CSP.Binary.Constraints;
 
