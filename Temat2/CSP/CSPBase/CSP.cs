@@ -1,4 +1,5 @@
-﻿using CSP.Helpers;
+﻿using CSP.Futoshiki.Constraints;
+using CSP.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CSP.CSPBase;
 
-public class CSP<V, D>
+public class CSP<V , D>
 {
     private ICollection<V> variables;
     private Dictionary<V, ICollection<D>> domains;
@@ -53,6 +54,104 @@ public class CSP<V, D>
             if(IsConsistent(unassigned, localAssigment))
             {
                 var res = BT(localAssigment);
+                results = results.Concat(res).ToList();
+            }
+        }
+
+        return results;
+    }
+
+    public ICollection<Dictionary<V, D>> FC(Dictionary<V, D> assigment)
+    {
+        return FC(assigment, domains);
+    }
+
+    private ICollection<Dictionary<V, D>> FC(Dictionary<V, D> assigment, Dictionary<V, ICollection<D>> domains)
+    {
+        ICollection<Dictionary<V, D>> results = new List<Dictionary<V, D>>();
+
+        if (assigment.Count() == variables.Count())
+        {
+            results.Add(assigment);
+            return results;
+        }
+
+        V unassigned = selectionStrategy.SelectVariable(assigment, variables);
+
+        foreach (var value in domains[unassigned])
+        {
+
+            // shallow coppy data
+            Dictionary<V, D> localAssigment = new(assigment);
+            Dictionary<V, ICollection<D>> localDomains = new Dictionary<V, ICollection<D>>();
+
+            foreach(var (k,v) in domains)
+            {
+                ICollection<D> domainCoppy = new List<D>();
+
+                foreach (D domainElement in domains[k])
+                {
+                    domainCoppy.Add(domainElement);
+                }
+
+                localDomains[k] = domainCoppy;
+            }
+            // shallow coppy data
+
+            localAssigment.Add(unassigned, value);
+
+            bool consistentFlag = true;
+
+            // for each constraint
+            foreach (var constraint in constraints[unassigned])
+            {
+                //if(typeof(GreaterThan<V>) == constraint.GetType())
+                //{
+                //    Console.WriteLine("aa");
+                //}
+                // for each dependent value of constraint
+                foreach (var variable in constraint.DependentVariables)
+                {
+                    // skip self and assigned values
+                    if (variable.Equals(unassigned) || localAssigment.ContainsKey(variable))
+                        continue;
+
+                    List<D> elementsToRemove = new List<D>();
+                    Dictionary<V, D> localAssigmentCheckCoppy = new(localAssigment);
+
+
+                    // for each variable value in domain
+                    foreach (var localValue in localDomains[variable])
+                    {
+                        localAssigmentCheckCoppy[variable] = localValue;
+
+                        // check if it is satisfied
+                        if (!constraint.Satisfied(localAssigmentCheckCoppy, variable))
+                        {
+                            elementsToRemove.Add(localValue);
+                        }
+                    }
+
+                    // occured empty domain
+                    if (elementsToRemove.Count() == localDomains[variable].Count())
+                    {
+                        consistentFlag = false;
+                        break;
+                    }
+
+                    foreach (var element in elementsToRemove)
+                        localDomains[variable].Remove(element);
+                }
+
+                if (!consistentFlag)
+                {
+                    break;
+                }
+            }
+
+            if (consistentFlag)
+            {
+                var res = FC(localAssigment, localDomains);
                 results = results.Concat(res).ToList();
             }
         }

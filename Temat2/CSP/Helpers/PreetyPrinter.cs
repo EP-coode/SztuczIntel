@@ -15,7 +15,7 @@ public static class PreetyPrinter
         if (sqr % 1 != 0)
             throw new InvalidOperationException();
 
-        int size = (int)Math.Floor(sqr);
+        int size = (int)Math.Floor(sqr) * 2;
 
         StringBuilder sb = new StringBuilder();
 
