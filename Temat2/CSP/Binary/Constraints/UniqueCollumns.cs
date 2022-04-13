@@ -7,12 +7,12 @@ using CSP.CSPBase;
 
 namespace CSP.Binary.Constraints;
 
-public class UniqueCollumn : Constraint<(int,int), int>
+public class UniqueCollumns : Constraint<(int, int), int>
 {
     private int boardHeight;
     private int boardWidth;
 
-    public UniqueCollumn(ICollection<(int, int)> dependsOnVariables, int boardHeight, int boardWidth) : base(dependsOnVariables)
+    public UniqueCollumns(ICollection<(int, int)> dependsOnVariables, int boardHeight, int boardWidth) : base(dependsOnVariables)
     {
         this.boardHeight = boardHeight;
         this.boardWidth = boardWidth;
@@ -23,13 +23,23 @@ public class UniqueCollumn : Constraint<(int,int), int>
         var (cx, cy) = changedVariable;
         int[] checkedCollumn = new int[boardHeight];
 
+
         for (int y = 0; y < boardHeight; y++)
         {
+            if (!assigment.ContainsKey((cx, y)))
+            {
+                continue;
+            }
             checkedCollumn[y] = assigment[(cx, y)];
         }
 
         for (int x = 0; x < boardWidth; x++)
         {
+            if (x == cx)
+            {
+                continue;
+            }
+
             bool colEqual = true;
             for (int y = 0; y < boardHeight; y++)
             {

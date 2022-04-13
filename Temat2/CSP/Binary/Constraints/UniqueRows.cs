@@ -7,12 +7,12 @@ using CSP.CSPBase;
 
 namespace CSP.Binary.Constraints;
 
-public class UniqueRow : Constraint<(int, int), int>
+public class UniqueRows : Constraint<(int, int), int>
 {
     private int boardHeight;
     private int boardWidth;
 
-    public UniqueRow(ICollection<(int, int)> dependsOnVariables, int boardHeight, int boardWidth) : base(dependsOnVariables)
+    public UniqueRows(ICollection<(int, int)> dependsOnVariables, int boardHeight, int boardWidth) : base(dependsOnVariables)
     {
         this.boardHeight = boardHeight;
         this.boardWidth = boardWidth;
@@ -23,22 +23,37 @@ public class UniqueRow : Constraint<(int, int), int>
         var (cx, cy) = changedVariable;
         int[] checkedRow = new int[boardWidth];
 
+        if (assigment.Count() == 14)
+        {
+            Console.WriteLine("a");
+        }
+
+
         for (int x = 0; x < boardWidth; x++)
         {
+            if (!assigment.ContainsKey((x, cy)))
+            {
+                continue;
+            }
             checkedRow[x] = assigment[(x, cy)];
         }
 
-        for (int y=0;y<boardHeight; y++)
+        for (int y = 0; y < boardHeight; y++)
         {
+            if (y == cy)
+            {
+                continue;
+            }
+
             bool rowsEqual = true;
-            for(int x = 0; x < boardWidth; x++)
+            for (int x = 0; x < boardWidth; x++)
             {
                 if (!assigment.ContainsKey((x, y)))
                 {
                     rowsEqual = false;
                     break;
                 }
-                else if(assigment[(x,y)] != checkedRow[x])
+                else if (assigment[(x, y)] != checkedRow[x])
                 {
                     rowsEqual = false;
                     break;
