@@ -10,7 +10,7 @@ using CSP.Futoshiki.Constraints;
 namespace CSP.Futoshiki;
 public static class FutoshikiLoader
 {
-    public static (CSP<(int,int), int>, Dictionary<(int, int), int>) LoadProblem(string fileUrl)
+    public static (CSP<(int,int), int>, Dictionary<(int, int), int>) LoadProblem(string fileUrl, IVariableSelectionStrategy<(int,int),int> selectionStrategy)
     {
         string[] data = File.ReadAllLines(fileUrl);
 
@@ -40,7 +40,7 @@ public static class FutoshikiLoader
             }
         }
 
-        CSP<(int, int), int> csp = new(variables, domains, new FindFirst<(int, int), int>());
+        CSP<(int, int), int> csp = new(variables, domains, selectionStrategy);
 
         // load no repeats in rows constraints
         for (int y = 0; y < data.Length; y++)
