@@ -34,6 +34,14 @@ var (cpsFuto6, fut6InitialAssigment) = FutoshikiLoader.LoadProblem("C:\\Users\\E
 var sollution31 = cpsFuto6.BT(fut6InitialAssigment);
 var sollution32 = cpsFuto6.FC(fut6InitialAssigment);
 
+Console.WriteLine("BC Futo 6x6: ");
+foreach (var sollution in sollution31)
+    Console.WriteLine(PreetyPrinter.variablesToTable(sollution));
+
+Console.WriteLine("FC Futo 6x6: ");
+foreach (var sollution in sollution32)
+    Console.WriteLine(PreetyPrinter.variablesToTable(sollution));
+
 var (cspBinary6, bin6InitialAssigment) = BinaryLoader.LoadProblem("C:\\Users\\ErnestPrzybyl\\googledrive\\Studia\\Semestr6\\lab\\SztuczIntel\\Temat2\\CSP\\dane\\binary_6x6", selectionStrategy);
 var binSollution61 = cspBinary6.BT(bin6InitialAssigment);
 var binSollution62 = cspBinary6.FC(bin6InitialAssigment);
