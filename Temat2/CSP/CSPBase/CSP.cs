@@ -63,7 +63,68 @@ public class CSP<V , D>
 
     public ICollection<Dictionary<V, D>> FC(Dictionary<V, D> assigment)
     {
+        // check initial variables
+        foreach(var variable in variables)
+        {
+            bool isConsistent = CutVariableDomains(variable, assigment, domains);
+            if (!isConsistent)
+            {
+                return new List<Dictionary<V, D>>();    
+            }
+        }
+
         return FC(assigment, domains);
+    }
+
+    // returns false if some domain is empty
+    private bool CutVariableDomains(V variableToCheck, Dictionary<V,D> assigment, Dictionary<V, ICollection<D>> domains)
+    {
+        bool consistentFlag = true;
+
+        // for each constraint
+        foreach (var constraint in constraints[variableToCheck])
+        {
+            // for each dependent value of constraint
+            foreach (var variable in constraint.DependentVariables)
+            {
+                // skip self and assigned values
+                if (variable.Equals(variableToCheck) || assigment.ContainsKey(variable))
+                    continue;
+
+                List<D> elementsToRemove = new List<D>();
+                Dictionary<V, D> localAssigmentCheckCoppy = new(assigment);
+
+
+                // for each variable value in domain
+                foreach (var localValue in domains[variable])
+                {
+                    localAssigmentCheckCoppy[variable] = localValue;
+
+                    // check if it is satisfied
+                    if (!constraint.Satisfied(localAssigmentCheckCoppy, variable))
+                    {
+                        elementsToRemove.Add(localValue);
+                    }
+                }
+
+                // occured empty domain
+                if (elementsToRemove.Count() >= domains[variable].Count())
+                {
+                    consistentFlag = false;
+                    break;
+                }
+
+                foreach (var element in elementsToRemove)
+                    domains[variable].Remove(element);
+            }
+
+            if (!consistentFlag)
+            {
+                break;
+            }
+        }
+
+        return consistentFlag;
     }
 
     private ICollection<Dictionary<V, D>> FC(Dictionary<V, D> assigment, Dictionary<V, ICollection<D>> domains)
@@ -100,56 +161,9 @@ public class CSP<V , D>
 
             localAssigment.Add(unassigned, value);
 
-            bool consistentFlag = true;
+            bool isConsistent = CutVariableDomains(unassigned, localAssigment, localDomains);
 
-            // for each constraint
-            foreach (var constraint in constraints[unassigned])
-            {
-                //if(typeof(GreaterThan<V>) == constraint.GetType())
-                //{
-                //    Console.WriteLine("aa");
-                //}
-                // for each dependent value of constraint
-                foreach (var variable in constraint.DependentVariables)
-                {
-                    // skip self and assigned values
-                    if (variable.Equals(unassigned) || localAssigment.ContainsKey(variable))
-                        continue;
-
-                    List<D> elementsToRemove = new List<D>();
-                    Dictionary<V, D> localAssigmentCheckCoppy = new(localAssigment);
-
-
-                    // for each variable value in domain
-                    foreach (var localValue in localDomains[variable])
-                    {
-                        localAssigmentCheckCoppy[variable] = localValue;
-
-                        // check if it is satisfied
-                        if (!constraint.Satisfied(localAssigmentCheckCoppy, variable))
-                        {
-                            elementsToRemove.Add(localValue);
-                        }
-                    }
-
-                    // occured empty domain
-                    if (elementsToRemove.Count() == localDomains[variable].Count())
-                    {
-                        consistentFlag = false;
-                        break;
-                    }
-
-                    foreach (var element in elementsToRemove)
-                        localDomains[variable].Remove(element);
-                }
-
-                if (!consistentFlag)
-                {
-                    break;
-                }
-            }
-
-            if (consistentFlag)
+            if (isConsistent)
             {
                 var res = FC(localAssigment, localDomains);
                 results = results.Concat(res).ToList();
