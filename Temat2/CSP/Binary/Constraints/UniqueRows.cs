@@ -23,12 +23,6 @@ public class UniqueRows : Constraint<(int, int), int>
         var (cx, cy) = changedVariable;
         int[] checkedRow = new int[boardWidth];
 
-        if (assigment.Count() == 14)
-        {
-            Console.WriteLine("a");
-        }
-
-
         for (int x = 0; x < boardWidth; x++)
         {
             if (!assigment.ContainsKey((x, cy)))

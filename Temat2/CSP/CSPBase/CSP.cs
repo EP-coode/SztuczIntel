@@ -48,11 +48,6 @@ public class CSP<V , D>
 
         foreach(var value in domains[unassigned]) {
 
-            if (unassigned.Equals((5, 0)))
-            {
-                Console.WriteLine("A");
-            }
-
             Dictionary<V, D> localAssigment = new(assigment);
             localAssigment.Add(unassigned, value);
 
