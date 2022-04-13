@@ -2,9 +2,11 @@
 using CSP.Helpers;
 using CSP.CSPBase;
 using CSP.Binary;
+using CSP.CSPBase.VariableSelection;
 
 
-IVariableSelectionStrategy<(int, int), int> selectionStrategy = new FindFirst<(int, int), int>();
+//IVariableSelectionStrategy<(int, int), int> selectionStrategy = new FindFirst<(int, int), int>();
+IVariableSelectionStrategy<(int, int), int> selectionStrategy = new BiggestAmmoutOfConstraints<(int, int), int>();
 
 var (cpsFuto4, fut4InitialAssigment) = FutoshikiLoader.LoadProblem("C:\\Users\\ErnestPrzybyl\\googledrive\\Studia\\Semestr6\\lab\\SztuczIntel\\Temat2\\CSP\\dane\\futoshiki_4x4", selectionStrategy);
 var sollutions11 = cpsFuto4.BT(fut4InitialAssigment);

@@ -44,7 +44,7 @@ public class CSP<V , D>
             return results;
         }
 
-        V unassigned = selectionStrategy.SelectVariable(assigment, variables);
+        V unassigned = selectionStrategy.SelectVariable(assigment, variables, constraints);
 
         foreach(var value in domains[unassigned]) {
 
@@ -137,7 +137,7 @@ public class CSP<V , D>
             return results;
         }
 
-        V unassigned = selectionStrategy.SelectVariable(assigment, variables);
+        V unassigned = selectionStrategy.SelectVariable(assigment, variables, constraints);
 
         foreach (var value in domains[unassigned])
         {
