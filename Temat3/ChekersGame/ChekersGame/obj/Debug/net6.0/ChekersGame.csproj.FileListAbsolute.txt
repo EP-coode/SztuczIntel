@@ -1,0 +1,15 @@
+C:\Users\ErnestPrzybyl\googledrive\Studia\Semestr6\lab\SztuczIntel\Temat3\ChekersGame\ChekersGame\bin\Debug\net6.0\ChekersGame.exe
+C:\Users\ErnestPrzybyl\googledrive\Studia\Semestr6\lab\SztuczIntel\Temat3\ChekersGame\ChekersGame\bin\Debug\net6.0\ChekersGame.deps.json
+C:\Users\ErnestPrzybyl\googledrive\Studia\Semestr6\lab\SztuczIntel\Temat3\ChekersGame\ChekersGame\bin\Debug\net6.0\ChekersGame.runtimeconfig.json
+C:\Users\ErnestPrzybyl\googledrive\Studia\Semestr6\lab\SztuczIntel\Temat3\ChekersGame\ChekersGame\bin\Debug\net6.0\ChekersGame.dll
+C:\Users\ErnestPrzybyl\googledrive\Studia\Semestr6\lab\SztuczIntel\Temat3\ChekersGame\ChekersGame\bin\Debug\net6.0\ref\ChekersGame.dll
+C:\Users\ErnestPrzybyl\googledrive\Studia\Semestr6\lab\SztuczIntel\Temat3\ChekersGame\ChekersGame\bin\Debug\net6.0\ChekersGame.pdb
+C:\Users\ErnestPrzybyl\googledrive\Studia\Semestr6\lab\SztuczIntel\Temat3\ChekersGame\ChekersGame\obj\Debug\net6.0\ChekersGame.csproj.AssemblyReference.cache
+C:\Users\ErnestPrzybyl\googledrive\Studia\Semestr6\lab\SztuczIntel\Temat3\ChekersGame\ChekersGame\obj\Debug\net6.0\ChekersGame.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\ErnestPrzybyl\googledrive\Studia\Semestr6\lab\SztuczIntel\Temat3\ChekersGame\ChekersGame\obj\Debug\net6.0\ChekersGame.AssemblyInfoInputs.cache
+C:\Users\ErnestPrzybyl\googledrive\Studia\Semestr6\lab\SztuczIntel\Temat3\ChekersGame\ChekersGame\obj\Debug\net6.0\ChekersGame.AssemblyInfo.cs
+C:\Users\ErnestPrzybyl\googledrive\Studia\Semestr6\lab\SztuczIntel\Temat3\ChekersGame\ChekersGame\obj\Debug\net6.0\ChekersGame.csproj.CoreCompileInputs.cache
+C:\Users\ErnestPrzybyl\googledrive\Studia\Semestr6\lab\SztuczIntel\Temat3\ChekersGame\ChekersGame\obj\Debug\net6.0\ChekersGame.dll
+C:\Users\ErnestPrzybyl\googledrive\Studia\Semestr6\lab\SztuczIntel\Temat3\ChekersGame\ChekersGame\obj\Debug\net6.0\ref\ChekersGame.dll
+C:\Users\ErnestPrzybyl\googledrive\Studia\Semestr6\lab\SztuczIntel\Temat3\ChekersGame\ChekersGame\obj\Debug\net6.0\ChekersGame.pdb
+C:\Users\ErnestPrzybyl\googledrive\Studia\Semestr6\lab\SztuczIntel\Temat3\ChekersGame\ChekersGame\obj\Debug\net6.0\ChekersGame.genruntimeconfig.cache

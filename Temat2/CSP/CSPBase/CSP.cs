@@ -2,22 +2,44 @@
 using CSP.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace CSP.CSPBase;
 
-public class CSP<V , D>
+public class CSP<V, D>
 {
     private ICollection<V> variables;
     private Dictionary<V, ICollection<D>> domains;
     private Dictionary<V, List<Constraint<V, D>>> constraints;
     private IVariableSelectionStrategy<V, D> selectionStrategy;
 
+    // only for measurements // very messy
+    public int nodeCount = 0;
+    public int firstSollution = 0;
+    public int backTrackCount = 0;
+    Stopwatch totalStopwatch = new Stopwatch();
+    Stopwatch firststopwatch = new Stopwatch();
+
+    private void StartMeasurements()
+    {
+        nodeCount = 0;
+        firstSollution = 0;
+        backTrackCount = 0;
+        firststopwatch.Restart();
+        totalStopwatch.Restart();
+    }
+
+    public (int, int, int, long, long) GetMeasurements()
+    {
+        return (nodeCount, firstSollution, backTrackCount, firststopwatch.ElapsedMilliseconds, totalStopwatch.ElapsedMilliseconds);
+    }
+
     public CSP(ICollection<V> variables,
-        Dictionary<V, ICollection<D>> domains,
-        IVariableSelectionStrategy<V, D> selectionStrategy)
+            Dictionary<V, ICollection<D>> domains,
+            IVariableSelectionStrategy<V, D> selectionStrategy)
     {
         this.variables = variables;
         this.domains = domains;
@@ -34,50 +56,73 @@ public class CSP<V , D>
         }
     }
 
+    public ICollection<Dictionary<V, D>> _BT(Dictionary<V, D> assigment)
+    {
+        StartMeasurements();
+        var r = BT(assigment);
+        totalStopwatch.Stop();
+        return r;
+    }
+
     public ICollection<Dictionary<V, D>> BT(Dictionary<V, D> assigment)
     {
+        nodeCount++;
+
         ICollection<Dictionary<V, D>> results = new List<Dictionary<V, D>>();
 
         if (assigment.Count() == variables.Count())
         {
+            if (firstSollution == 0)
+            {
+                firstSollution = nodeCount;
+                firststopwatch.Stop();
+            }
             results.Add(assigment);
             return results;
         }
 
         V unassigned = selectionStrategy.SelectVariable(assigment, variables, constraints);
 
-        foreach(var value in domains[unassigned]) {
+        foreach (var value in domains[unassigned])
+        {
 
             Dictionary<V, D> localAssigment = new(assigment);
             localAssigment.Add(unassigned, value);
 
-            if(IsConsistent(unassigned, localAssigment))
+            if (IsConsistent(unassigned, localAssigment))
             {
                 var res = BT(localAssigment);
                 results = results.Concat(res).ToList();
             }
+            else
+            {
+                backTrackCount++;
+            }
         }
-
         return results;
     }
 
     public ICollection<Dictionary<V, D>> FC(Dictionary<V, D> assigment)
     {
+        StartMeasurements();
+
         // check initial variables
-        foreach(var variable in variables)
+        foreach (var variable in variables)
         {
             bool isConsistent = CutVariableDomains(variable, assigment, domains);
             if (!isConsistent)
             {
-                return new List<Dictionary<V, D>>();    
+                return new List<Dictionary<V, D>>();
             }
         }
 
-        return FC(assigment, domains);
+        var res = FC(assigment, domains);
+        totalStopwatch.Stop();
+        return res;
     }
 
     // returns false if some domain is empty
-    private bool CutVariableDomains(V variableToCheck, Dictionary<V,D> assigment, Dictionary<V, ICollection<D>> domains)
+    private bool CutVariableDomains(V variableToCheck, Dictionary<V, D> assigment, Dictionary<V, ICollection<D>> domains)
     {
         bool consistentFlag = true;
 
@@ -129,10 +174,17 @@ public class CSP<V , D>
 
     private ICollection<Dictionary<V, D>> FC(Dictionary<V, D> assigment, Dictionary<V, ICollection<D>> domains)
     {
+        nodeCount++;
+
         ICollection<Dictionary<V, D>> results = new List<Dictionary<V, D>>();
 
         if (assigment.Count() == variables.Count())
         {
+            if (firstSollution == 0)
+            {
+                firstSollution = nodeCount;
+                firststopwatch.Stop();
+            }
             results.Add(assigment);
             return results;
         }
@@ -146,7 +198,7 @@ public class CSP<V , D>
             Dictionary<V, D> localAssigment = new(assigment);
             Dictionary<V, ICollection<D>> localDomains = new Dictionary<V, ICollection<D>>();
 
-            foreach(var (k,v) in domains)
+            foreach (var (k, v) in domains)
             {
                 ICollection<D> domainCoppy = new List<D>();
 
@@ -167,6 +219,10 @@ public class CSP<V , D>
             {
                 var res = FC(localAssigment, localDomains);
                 results = results.Concat(res).ToList();
+            }
+            else
+            {
+                backTrackCount++;
             }
         }
 
