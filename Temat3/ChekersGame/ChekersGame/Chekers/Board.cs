@@ -8,13 +8,12 @@ namespace ChekersGame.Chekers;
 
 public enum Piece
 {
-    EMPTY = 0,
-    BLACK = 1,
-    BLACK_KING = 2,
-    WHITE = 3,
-    WHITE_KING = 4,
+    WHITE,
+    WHITE_KING,
+    BLACK,
+    BLACK_KING,
+    EMPTY,
 }
-
 
 public class Board
 {
@@ -24,6 +23,7 @@ public class Board
     public Board()
     {
         // [row, col]
+        // squished verticaly
         board = new Piece[BOARD_SIZE / 2, BOARD_SIZE];
         InitOrResetBoard();
     }
@@ -60,6 +60,39 @@ public class Board
         return (row % 2 == 1 && col % 2 == 0) || (row % 2 == 0 && col % 2 == 1);
     }
 
+    //private List<(int, int)> GetAllPossibleMoves(int src_row, int src_col)
+    //{
+    //    if (src_col < 0 || src_col > BOARD_SIZE || src_row < 0 || src_row > BOARD_SIZE)
+    //        throw new InvalidOperationException();
+
+    //    Piece srcPiece = this[src_row, src_col];
+
+    //    if (srcPiece.Color == PieceColor.NONE)
+    //        throw new InvalidOperationException("You can't move from empty space!");
+
+
+    //}
+
+    private static bool HasOppositeColor(Piece p1, Piece p2)
+    {
+        return IsPieceWhite(p1) && IsPieceBlack(p2) || IsPieceBlack(p1) && IsPieceWhite(p2);
+    }
+
+    private static bool IsKing(Piece p)
+    {
+        return p == Piece.BLACK_KING || p == Piece.WHITE_KING;
+    }
+
+    private static bool IsPieceWhite(Piece p)
+    {
+        return p == Piece.WHITE || p == Piece.WHITE_KING;
+    }
+
+    private static bool IsPieceBlack(Piece p)
+    {
+        return p == Piece.BLACK || p == Piece.BLACK_KING;
+    }
+
     private void InitOrResetBoard()
     {
         // iterate over black fields
@@ -90,18 +123,30 @@ public class Board
         {
             for (int j = 0; j < BOARD_SIZE; j++)
             {
-                switch (this[i, j])
+                Piece movingPiece = this[i, j];
+
+                switch (movingPiece)
                 {
                     case Piece.BLACK:
                         sb.Append('b');
                         break;
+                    case Piece.BLACK_KING:
+                        sb.Append('B');
+                        break;
                     case Piece.WHITE:
                         sb.Append('w');
                         break;
-                    default:
+                    case Piece.WHITE_KING:
+                        sb.Append('W');
+                        break;
+                    case Piece.EMPTY:
                         sb.Append('-');
                         break;
+                    default:
+                        sb.Append('~');
+                        break;
                 }
+
             }
             sb.AppendLine();
         }

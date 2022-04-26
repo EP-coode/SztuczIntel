@@ -3,7 +3,6 @@ using ChekersGame.Chekers;
 
 Board b = new();
 
-b[0, 1] = Piece.BLACK;
 
 Console.WriteLine(b);
 
