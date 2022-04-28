@@ -371,6 +371,7 @@ public class Board
 
         for (int i = 0; i < BOARD_SIZE; i++)
         {
+            sb.Append($"{i}|");
             for (int j = 0; j < BOARD_SIZE; j++)
             {
                 Piece movingPiece = this[i, j];
@@ -400,6 +401,7 @@ public class Board
             }
             sb.AppendLine();
         }
+        sb.AppendLine("--01234567");
 
         return sb.ToString();
     }
