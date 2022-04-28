@@ -18,19 +18,19 @@ public enum Piece
 public class Board
 {
     public const int BOARD_SIZE = 8;
-    private Piece[,] board;
+    private Piece[,] boardBlackTiles;
 
     public Board()
     {
         // [row, col]
         // squished verticaly
-        board = new Piece[BOARD_SIZE / 2, BOARD_SIZE];
+        boardBlackTiles = new Piece[BOARD_SIZE / 2, BOARD_SIZE];
         InitOrResetBoard();
     }
 
     public Board(Board board)
     {
-        throw new NotImplementedException();
+        boardBlackTiles = board.boardBlackTiles.Clone() as Piece[,];
     }
 
     public Piece this[int row, int col]
@@ -42,7 +42,7 @@ public class Board
                 return Piece.EMPTY;
             }
 
-            return board[row / 2, col];
+            return boardBlackTiles[row / 2, col];
         }
         set
         {
@@ -51,7 +51,7 @@ public class Board
                 throw new InvalidOperationException("You can put pieces only on black fields");
             }
 
-            board[row / 2, col] = value;
+            boardBlackTiles[row / 2, col] = value;
         }
     }
 
@@ -88,9 +88,9 @@ public class Board
         var (src_row, src_col, dst_row, dst_col) = m;
         if (m.IsCapture)
         {
-            int dy = src_row - dst_row > 0 ? 1 : -1;
-            int dx = src_col - dst_col > 0 ? 1 : -1;
-            this[dst_row - dy, src_col - dx] = Piece.EMPTY;
+            int dy = src_row - dst_row > 0 ? -1 : 1;
+            int dx = src_col - dst_col > 0 ? -1 : 1;
+            this[dst_row - dy, dst_col - dx] = Piece.EMPTY;
         }
 
         if (m.NextMove is not null)
@@ -104,10 +104,10 @@ public class Board
 
     public List<Move> GetAllPossibleMoves(int src_row, int src_col)
     {
-        return GetAllPossibleMoves(src_row, src_col, this[src_row, src_col]);
+        return GetAllPossibleMoves(src_row, src_col, this[src_row, src_col], new Board(this));
     }
 
-    private List<Move> GetAllPossibleMoves(int src_row, int src_col, Piece movingPiece)
+    private List<Move> GetAllPossibleMoves(int src_row, int src_col, Piece movingPiece, Board boardClone, bool onlyCaptures = false)
     {
         if (movingPiece == Piece.EMPTY)
             throw new InvalidOperationException("You can't move empty piece");
@@ -117,42 +117,53 @@ public class Board
         // TODO - remove redundant code
         if (IsKing(movingPiece))
         {
-            var kingCaptures = GetCapturesForKing(src_row, src_col);
+            var kingCaptures = boardClone. GetCapturesForKing(src_row, src_col);
             if (kingCaptures.Count() > 0)
             {
                 foreach (Move move in kingCaptures)
                 {
                     var (_, _, dst_row, dst_col) = move;
-                    var nextMoves = GetAllPossibleMoves(dst_row, dst_col, movingPiece);
+                    boardClone.MakeMove(move);
+                    var nextMoves = boardClone.GetAllPossibleMoves(dst_row, dst_col, movingPiece, boardClone, true);
                     foreach (Move nextMove in nextMoves)
                     {
                         move.NextMove = nextMove;
                     }
+                    if (nextMoves.Count() == 0)
+                    {
+                        possibleMoves.Add(move);
+                    }
                 }
                 possibleMoves.AddRange(kingCaptures);
             }
-            else
+            else if(!onlyCaptures)
             {
                 possibleMoves.AddRange(GetAllJumpsForKing(src_row, src_col, movingPiece));
             }
         }
         else
         {
-            var pieceCaptures = GetCapturesForPiece(src_row, src_col, movingPiece);
+            var pieceCaptures = boardClone.GetCapturesForPiece(src_row, src_col, movingPiece);
             if (pieceCaptures.Count() > 0)
             {
                 foreach (Move move in pieceCaptures)
                 {
                     var (_, _, dst_row, dst_col) = move;
-                    var nextMoves = GetAllPossibleMoves(dst_row, dst_col, movingPiece);
+                    boardClone.MakeMove(move);
+                    var nextMoves = boardClone.GetAllPossibleMoves(dst_row, dst_col, movingPiece, boardClone, true);
                     foreach (Move nextMove in nextMoves)
                     {
-                        move.NextMove = nextMove;
+                        var moveClone = new Move(move);
+                        moveClone.NextMove = nextMove;
+                        possibleMoves.Add(moveClone);
+                    }
+                    if(nextMoves.Count() == 0)
+                    {
+                        possibleMoves.Add(move);
                     }
                 }
-                possibleMoves.AddRange(pieceCaptures);
             }
-            else
+            else if (!onlyCaptures)
             {
                 possibleMoves.AddRange(GetAllJumpsForPiece(src_row, src_col, movingPiece));
             }

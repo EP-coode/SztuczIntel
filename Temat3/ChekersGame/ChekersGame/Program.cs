@@ -1,25 +1,20 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using ChekersGame.Chekers;
+using ChekersGame;
 
-
-Random rnd = new Random();
 
 Board b = new();
 
-b.MakeMove(new Move(2, 1, 3, 2));
-b.MakeMove(new Move(5,0, 4, 1));
+IPlayer player = new ConsolePlayer();
 
 Console.WriteLine(b);
 
-var moves = b.GetAllPossibleMoves(3, 2);
-
-while (moves.Count() > 0)
+while (true)
 {
-    var (row, col) = b.MakeMove(moves[rnd.Next(moves.Count())]);
-    moves = b.GetAllPossibleMoves(row, col);
+    Move m = player.MakeMove(b);
+    b.MakeMove(m);
     Console.WriteLine(b);
 }
-
 
 
 Console.WriteLine("Hello, World!");

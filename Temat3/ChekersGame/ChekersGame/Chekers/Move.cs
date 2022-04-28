@@ -30,6 +30,16 @@ public class Move
         this.IsCapture = isCapture;
     }
 
+    public Move(Move m)
+    {
+        var(src_row, src_col, dst_row, dst_col) = m;
+        this.src_row = src_row;
+        this.src_col = src_col;
+        this.dest_row = dst_row;
+        this.dest_col = dst_col;
+        this.IsCapture = m.IsCapture;
+    }
+
     public override string ToString()
     {
         string result;
