@@ -3,8 +3,9 @@ using ChekersGame.Chekers;
 
 Board b = new();
 
-
 Console.WriteLine(b);
+
+var moves = b.GetAllPossibleMoves(2, 1, Piece.BLACK);
 
 
 Console.WriteLine("Hello, World!");

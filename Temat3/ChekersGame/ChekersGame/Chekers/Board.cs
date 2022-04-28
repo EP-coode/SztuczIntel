@@ -33,6 +33,13 @@ public class Board
         throw new NotImplementedException();
     }
 
+    /// <summary>
+    /// Acces and mutate the state of the board based on row and col number
+    /// </summary>
+    /// <param name="row">row number of piece</param>
+    /// <param name="col">col number of piece</param>
+    /// <returns cref="Piece">Piece at given position</returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public Piece this[int row, int col]
     {
         get
@@ -60,18 +67,221 @@ public class Board
         return (row % 2 == 1 && col % 2 == 0) || (row % 2 == 0 && col % 2 == 1);
     }
 
-    //private List<(int, int)> GetAllPossibleMoves(int src_row, int src_col)
-    //{
-    //    if (src_col < 0 || src_col > BOARD_SIZE || src_row < 0 || src_row > BOARD_SIZE)
-    //        throw new InvalidOperationException();
+    public List<Move> GetAllPossibleMoves(int src_row, int src_col, Piece movingPiece)
+    {
+        if (movingPiece == Piece.EMPTY)
+            throw new InvalidOperationException("You can't move empty piece");
 
-    //    Piece srcPiece = this[src_row, src_col];
+        List<Move> possibleMoves = new List<Move>();
 
-    //    if (srcPiece.Color == PieceColor.NONE)
-    //        throw new InvalidOperationException("You can't move from empty space!");
+        // TODO - remove redundant code
+        if (IsKing(movingPiece))
+        {
+            var kingCaptures = GetCapturesForKing(src_row, src_col);
+            if (kingCaptures.Count() > 0)
+            {
+                foreach (Move move in kingCaptures)
+                {
+                    var (_, _, dst_row, dst_col) = move;
+                    var nextMoves = GetAllPossibleMoves(dst_row, dst_col, movingPiece);
+                    foreach (Move nextMove in nextMoves)
+                    {
+                        move.NextMove = nextMove;
+                    }
+                }
+            }
+            else
+            {
+                possibleMoves.AddRange(GetAllJumpsForKing(src_row, src_col));
+            }
+        }
+        else
+        {
+            var pieceCaptures = GetCapturesForPiece(src_row, src_col, movingPiece);
+            if (pieceCaptures.Count() > 0)
+            {
+                foreach (Move move in pieceCaptures)
+                {
+                    var (_, _, dst_row, dst_col) = move;
+                    var nextMoves = GetAllPossibleMoves(dst_row, dst_col, movingPiece);
+                    foreach (Move nextMove in nextMoves)
+                    {
+                        move.NextMove = nextMove;
+                    }
+                }
+            }
+            else
+            {
+                possibleMoves.AddRange(GetAllJumpsForPiece(src_row, src_col, movingPiece));
+            }
+        }
 
+        return possibleMoves;
+    }
 
-    //}
+    private List<Move> GetAllJumpsForKing(int src_row, int src_col)
+    {
+        if (!IsKing(this[src_row, src_col]))
+            throw new InvalidCastException("You can call this method only for kings");
+
+        List<(int, int)> directions = new()
+        {
+            (-1, -1),
+            (1, 1),
+            (1, -1),
+            (-1, 1),
+        };
+
+        List<Move> possibleMoves = new List<Move>();
+
+        foreach (var (dx, dy) in directions)
+        {
+            int dst_col = src_col;
+            int dst_row = src_row;
+            while (dst_col > 0 && dst_row > 0)
+            {
+                dst_row += dx;
+                dst_col += dy;
+                Piece pieceAtDestination = this[dst_row, dst_col];
+
+                if (pieceAtDestination == Piece.EMPTY)
+                    possibleMoves.Add(new Move(src_row, src_col, dst_row, dst_col));
+                else
+                    break;
+            }
+        }
+
+        return possibleMoves;
+    }
+
+    private List<Move> GetAllJumpsForPiece(int src_row, int src_col, Piece movingPiece)
+    {
+        if (movingPiece != Piece.BLACK && movingPiece != Piece.WHITE)
+            throw new InvalidCastException("You can call this method only for normal pieces");
+
+        List<(int, int)> directions;
+
+        if (this[src_row, src_col] == Piece.BLACK)
+        {
+            directions = new()
+            {
+                (1, 1),
+                (1, -1)
+            };
+        }
+        else
+        {
+            directions = new()
+            {
+                (-1, 1),
+                (-1, -1)
+            };
+        }
+
+        List<Move> possibleMoves = new List<Move>();
+        directions = directions.FindAll(x => IsPositionInBoard(x.Item1 + src_row, x.Item2 + src_col));
+        foreach (var (dy, dx) in directions)
+        {
+            int dst_col = src_col + dx;
+            int dst_row = src_row + dy;
+            Piece pieceAtDestination = this[dst_row, dst_col];
+
+            if (pieceAtDestination == Piece.EMPTY)
+                possibleMoves.Add(new Move(src_row, src_col, dst_row, dst_col));
+        }
+        return possibleMoves;
+    }
+
+    private List<Move> GetCapturesForPiece(int src_row, int src_col, Piece movingPiece)
+    {
+        if (movingPiece != Piece.BLACK && movingPiece != Piece.WHITE)
+            throw new InvalidCastException("You can call this method only for normal pieces");
+
+        List<(int, int)> moves = new()
+        {
+            (-2, -2),
+            (2, 2),
+            (2, -2),
+            (-2, 2),
+        };
+
+        moves = moves.FindAll(x => IsPositionInBoard(x.Item1 + src_row, x.Item2 + src_col)).ToList();
+
+        List<Move> possibleMoves = new List<Move>();
+
+        foreach (var (dy, dx) in moves)
+        {
+            int dst_col = src_col + dx;
+            int dst_row = src_row + dy;
+
+            Piece pieceAtDestination = this[dst_row, dst_col];
+            Piece capturedPiece = this[dst_row - dy / 2, dst_col + dx / 2];
+
+            if (pieceAtDestination == Piece.EMPTY && HasOppositeColor(capturedPiece, movingPiece))
+                possibleMoves.Add(new Move(src_row, src_col, dst_row, dst_col, true));
+            else
+                break;
+
+        }
+
+        return possibleMoves;
+    }
+
+    private List<Move> GetCapturesForKing(int src_row, int src_col)
+    {
+        if (!IsKing(this[src_row, src_col]))
+            throw new InvalidCastException("You can call this method only for kings");
+
+        List<(int, int)> directions = new()
+        {
+            (-1, -1),
+            (1, 1),
+            (1, -1),
+            (-1, 1),
+        };
+
+        Piece movingPiece = this[src_row, src_col];
+
+        List<Move> possibleMoves = new List<Move>();
+
+        foreach (var (dx, dy) in directions)
+        {
+            bool pieceOccured = false;
+            int dst_col = src_col;
+            int dst_row = src_row;
+            while (dst_col > 0 && dst_row > 0)
+            {
+                dst_row += dx;
+                dst_col += dy;
+                Piece pieceAtDestination = this[dst_row, dst_col];
+
+                if (!pieceOccured)
+                {
+
+                    if (HasOppositeColor(pieceAtDestination, movingPiece))
+                        pieceOccured = true;
+
+                    else
+                        break;
+                }
+                else
+                {
+                    if (pieceAtDestination == Piece.EMPTY)
+                        possibleMoves.Add(new Move(src_row, src_col, dst_row, dst_col, true));
+
+                    break;
+                }
+
+            }
+        }
+
+        return possibleMoves;
+    }
+
+    private bool IsPositionInBoard(int row, int col)
+    {
+        return (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE);
+    }
 
     private static bool HasOppositeColor(Piece p1, Piece p2)
     {
