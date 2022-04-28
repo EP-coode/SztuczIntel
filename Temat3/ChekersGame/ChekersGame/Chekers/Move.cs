@@ -21,12 +21,12 @@ public class Move
         dst_col = this.dest_col;
     }
 
-    public Move(int src_x, int src_y, int dest_x, int dest_y, bool isCapture = false)
+    public Move(int src_row, int src_col, int dst_row, int dst_col, bool isCapture = false)
     {
-        this.src_row = src_x;
-        this.src_col = src_y;
-        this.dest_row = dest_x;
-        this.dest_col = dest_y;
+        this.src_row = src_row;
+        this.src_col = src_col;
+        this.dest_row = dst_row;
+        this.dest_col = dst_col;
         this.IsCapture = isCapture;
     }
 

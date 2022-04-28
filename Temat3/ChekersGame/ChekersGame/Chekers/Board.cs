@@ -33,13 +33,6 @@ public class Board
         throw new NotImplementedException();
     }
 
-    /// <summary>
-    /// Acces and mutate the state of the board based on row and col number
-    /// </summary>
-    /// <param name="row">row number of piece</param>
-    /// <param name="col">col number of piece</param>
-    /// <returns cref="Piece">Piece at given position</returns>
-    /// <exception cref="InvalidOperationException"></exception>
     public Piece this[int row, int col]
     {
         get
@@ -67,7 +60,54 @@ public class Board
         return (row % 2 == 1 && col % 2 == 0) || (row % 2 == 0 && col % 2 == 1);
     }
 
-    public List<Move> GetAllPossibleMoves(int src_row, int src_col, Piece movingPiece)
+    public (int, int) MakeMove(Move m)
+    {
+        var (src_row, src_col, dst_row, dst_col) = m;
+
+        Piece movingPiece = this[src_row, src_col];
+        this[src_row, src_col] = Piece.EMPTY;
+
+        if (m.IsCapture)
+        {
+            int dy = src_row - dst_row > 0 ? -1 : 1;
+            int dx = src_col - dst_col > 0 ? -1 : 1;
+            this[dst_row - dy, dst_col - dx] = Piece.EMPTY;
+        }
+
+        if (m.NextMove is not null)
+            return MakeMove(m.NextMove, movingPiece);
+        else
+        {
+            this[dst_row, dst_col] = movingPiece;
+            return (dst_row, dst_col);
+        }
+    }
+
+    private (int, int) MakeMove(Move m, Piece movingPiece)
+    {
+        var (src_row, src_col, dst_row, dst_col) = m;
+        if (m.IsCapture)
+        {
+            int dy = src_row - dst_row > 0 ? 1 : -1;
+            int dx = src_col - dst_col > 0 ? 1 : -1;
+            this[dst_row - dy, src_col - dx] = Piece.EMPTY;
+        }
+
+        if (m.NextMove is not null)
+            return MakeMove(m.NextMove, movingPiece);
+        else
+        {
+            this[dst_row, dst_col] = movingPiece;
+            return (dst_row, dst_col);
+        }
+    }
+
+    public List<Move> GetAllPossibleMoves(int src_row, int src_col)
+    {
+        return GetAllPossibleMoves(src_row, src_col, this[src_row, src_col]);
+    }
+
+    private List<Move> GetAllPossibleMoves(int src_row, int src_col, Piece movingPiece)
     {
         if (movingPiece == Piece.EMPTY)
             throw new InvalidOperationException("You can't move empty piece");
@@ -89,10 +129,11 @@ public class Board
                         move.NextMove = nextMove;
                     }
                 }
+                possibleMoves.AddRange(kingCaptures);
             }
             else
             {
-                possibleMoves.AddRange(GetAllJumpsForKing(src_row, src_col));
+                possibleMoves.AddRange(GetAllJumpsForKing(src_row, src_col, movingPiece));
             }
         }
         else
@@ -109,6 +150,7 @@ public class Board
                         move.NextMove = nextMove;
                     }
                 }
+                possibleMoves.AddRange(pieceCaptures);
             }
             else
             {
@@ -119,9 +161,9 @@ public class Board
         return possibleMoves;
     }
 
-    private List<Move> GetAllJumpsForKing(int src_row, int src_col)
+    private List<Move> GetAllJumpsForKing(int src_row, int src_col, Piece movingPiece)
     {
-        if (!IsKing(this[src_row, src_col]))
+        if (!IsKing(movingPiece))
             throw new InvalidCastException("You can call this method only for kings");
 
         List<(int, int)> directions = new()
@@ -134,7 +176,7 @@ public class Board
 
         List<Move> possibleMoves = new List<Move>();
 
-        foreach (var (dx, dy) in directions)
+        foreach (var (dy, dx) in directions)
         {
             int dst_col = src_col;
             int dst_row = src_row;
@@ -215,12 +257,10 @@ public class Board
             int dst_row = src_row + dy;
 
             Piece pieceAtDestination = this[dst_row, dst_col];
-            Piece capturedPiece = this[dst_row - dy / 2, dst_col + dx / 2];
+            Piece capturedPiece = this[dst_row - dy / 2, dst_col - dx / 2];
 
             if (pieceAtDestination == Piece.EMPTY && HasOppositeColor(capturedPiece, movingPiece))
                 possibleMoves.Add(new Move(src_row, src_col, dst_row, dst_col, true));
-            else
-                break;
 
         }
 
