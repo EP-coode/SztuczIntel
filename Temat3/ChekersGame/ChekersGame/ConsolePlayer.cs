@@ -8,10 +8,20 @@ using ChekersGame.Chekers;
 
 namespace ChekersGame;
 
-public class ConsolePlayer : IPlayer
+public class ConsolePlayer : Player
 {
-    public Move MakeMove(Board b)
+    public ConsolePlayer(PieceColor color) : base(color)
     {
+
+    }
+
+    public override Move MakeMove(Board b)
+    {
+        if(PlayerPieceColor == PieceColor.BLACK)
+            Console.WriteLine($"----------GRACZ CZARNY------------");
+        else
+            Console.WriteLine($"----------GRACZ BIAŁY------------");
+
         int row, col;
         List<Move> moves = new List<Move>();
         do
@@ -22,9 +32,9 @@ public class ConsolePlayer : IPlayer
             {
                 bool rowOk = int.TryParse(input[0].ToString(), out row);
                 bool colOk = int.TryParse(input[1].ToString(), out col);
-                if (rowOk && colOk)
+                if (rowOk && colOk && b[row, col] != null && b[row, col].PieceColor == PlayerPieceColor)
                 {
-                    moves = b.GetAllPossibleMoves(row, col);
+                    moves = b.GetAllPossibleMoves(b[row, col]);
                     if (moves.Count() > 0)
                         break;
                 }
@@ -41,7 +51,8 @@ public class ConsolePlayer : IPlayer
 
         int idRochu;
 
-        do {
+        do
+        {
             Console.WriteLine("Wybierz róch: ");
             string input = Console.ReadLine();
             bool ok = int.TryParse(input, out idRochu);

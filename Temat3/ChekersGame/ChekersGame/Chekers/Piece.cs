@@ -20,6 +20,8 @@ public class Piece
 
     public PieceColor PieceColor { get { return pieceColor; } }
     public bool IsKing { get; set; }
+    public int Row { get { return row; } }
+    public int Col { get { return col; } }
 
 
     public Piece(int row, int col, PieceColor color, bool isKing = false)

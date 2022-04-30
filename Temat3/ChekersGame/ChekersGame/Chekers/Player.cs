@@ -6,8 +6,15 @@ using System.Threading.Tasks;
 
 namespace ChekersGame.Chekers;
 
-public interface IPlayer
+public abstract class Player
 {
-    public Move MakeMove(Board b);
+    public PieceColor PlayerPieceColor { get; }
+
+    public Player(PieceColor color)
+    {
+        PlayerPieceColor = color;
+    }
+
+    public abstract Move MakeMove(Board b);
 }
 

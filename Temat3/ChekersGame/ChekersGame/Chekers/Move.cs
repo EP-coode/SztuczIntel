@@ -42,21 +42,24 @@ public class Move
 
     public override bool Equals(object? obj)
     {
-        if(obj == null || typeof(Move).IsInstanceOfType(obj))
+        if(obj == null || !typeof(Move).IsInstanceOfType(obj))
             return false;
+
+        if (obj == this)
+            return true;
 
         Move other = (Move)obj;
         
         if(other.src_col != src_col)
             return false;
 
-        if (other.src_row != src_col)
+        if (other.src_row != src_row)
             return false;
 
         if (other.dest_col != dest_col)
             return false;
 
-        if (other.dest_row!= dest_row)
+        if (other.dest_row != dest_row)
             return false;
 
         if (other.IsCapture != IsCapture)
@@ -66,7 +69,6 @@ public class Move
             return true;
         else 
             return NextMove.Equals(other.NextMove);
-
     }
 
     public override string ToString()

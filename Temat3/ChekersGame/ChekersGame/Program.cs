@@ -2,19 +2,13 @@
 using ChekersGame.Chekers;
 using ChekersGame;
 
+Player player1 = new ConsolePlayer(PieceColor.WHITE);
+Player player2 = new ConsolePlayer(PieceColor.BLACK);
 
-Board b = new();
+Game game = new Game(player1, player2);
 
-IPlayer player = new ConsolePlayer();
-
-Console.WriteLine(b);
-
-while (true)
+while (!game.IsFinished())
 {
-    Move m = player.MakeMove(b);
-    b = b.MakeMove(m);
-    Console.WriteLine(b);
+    Console.WriteLine(game.GameBoard);
+    game.NextMove();
 }
-
-
-Console.WriteLine("Hello, World!");

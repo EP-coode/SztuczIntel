@@ -9,7 +9,7 @@ namespace ChekersGame.Chekers;
 public class Board
 {
     public const int BOARD_SIZE = 8;
-    private Piece[,] boardBlackTiles;
+    private Piece?[,] boardBlackTiles;
 
     public Board()
     {
@@ -83,6 +83,27 @@ public class Board
         return boardClone;
     }
 
+    public List<Move> GetAllPossibleMoves(Piece p)
+    {
+        Piece? movingPiece = this[p.Row, p.Col];
+
+        if (movingPiece == null)
+            throw new InvalidOperationException("In this position there is no piece");
+
+        return GetAllPossibleMoves(p.Row, p.Col, movingPiece, new Board(this));
+    }
+
+    public List<Piece> GetPieces(PieceColor color)
+    {
+        List<Piece> pieces = new List<Piece>();
+        foreach(Piece? piece in boardBlackTiles)
+        {
+            if (piece != null && piece.PieceColor == color)
+                pieces.Add(piece);
+        }
+        return pieces;
+    }
+
     private static void MakeMove(Move m, Board board, Piece movingPiece)
     {
         var (src_row, src_col, dst_row, dst_col) = m;
@@ -101,16 +122,6 @@ public class Board
         {
             board[dst_row, dst_col] = movingPiece;
         }
-    }
-
-    public List<Move> GetAllPossibleMoves(int src_row, int src_col)
-    {
-        Piece? movingPiece = this[src_row, src_col];
-
-        if (movingPiece == null)
-            throw new InvalidOperationException("In this position there is no piece");
-
-        return GetAllPossibleMoves(src_row, src_col, movingPiece, new Board(this));
     }
 
     private List<Move> GetAllPossibleMoves(int src_row, int src_col, Piece movingPiece, Board boardClone, bool onlyCaptures = false)
