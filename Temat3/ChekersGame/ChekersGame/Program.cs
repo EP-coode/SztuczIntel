@@ -12,7 +12,7 @@ Console.WriteLine(b);
 while (true)
 {
     Move m = player.MakeMove(b);
-    b.MakeMove(m);
+    b = b.MakeMove(m);
     Console.WriteLine(b);
 }
 

@@ -6,15 +6,6 @@ using System.Threading.Tasks;
 
 namespace ChekersGame.Chekers;
 
-public enum Piece
-{
-    WHITE,
-    WHITE_KING,
-    BLACK,
-    BLACK_KING,
-    EMPTY,
-}
-
 public class Board
 {
     public const int BOARD_SIZE = 8;
@@ -33,20 +24,20 @@ public class Board
         boardBlackTiles = board.boardBlackTiles.Clone() as Piece[,];
     }
 
-    public Piece this[int row, int col]
+    public Piece? this[int row, int col]
     {
         get
         {
-            if (!IsBlackField(row, col))
+            if (IsWhiteTile(row, col))
             {
-                return Piece.EMPTY;
+                return null;
             }
 
             return boardBlackTiles[row / 2, col];
         }
         set
         {
-            if (!IsBlackField(row, col))
+            if (IsWhiteTile(row, col))
             {
                 throw new InvalidOperationException("You can put pieces only on black fields");
             }
@@ -55,118 +46,175 @@ public class Board
         }
     }
 
-    public bool IsBlackField(int row, int col)
-    {
-        return (row % 2 == 1 && col % 2 == 0) || (row % 2 == 0 && col % 2 == 1);
-    }
-
-    public (int, int) MakeMove(Move m)
+    public Board MakeMove(Move m)
     {
         var (src_row, src_col, dst_row, dst_col) = m;
 
-        Piece movingPiece = this[src_row, src_col];
-        this[src_row, src_col] = Piece.EMPTY;
+        Piece? movingPiece = this[src_row, src_col];
+
+        if (movingPiece == null)
+            throw new InvalidOperationException("Can't move non existing piece");
+
+        Board boardClone = new Board(this);
+
+        boardClone[src_row, src_col] = null;
 
         if (m.IsCapture)
         {
             int dy = src_row - dst_row > 0 ? -1 : 1;
             int dx = src_col - dst_col > 0 ? -1 : 1;
-            this[dst_row - dy, dst_col - dx] = Piece.EMPTY;
+            boardClone[dst_row - dy, dst_col - dx] = null;
         }
+
+        movingPiece.SetPosition(dst_row, dst_col);
 
         if (m.NextMove is not null)
-            return MakeMove(m.NextMove, movingPiece);
+            MakeMove(m.NextMove, boardClone, movingPiece);
         else
-        {
-            this[dst_row, dst_col] = movingPiece;
-            return (dst_row, dst_col);
-        }
+            boardClone[dst_row, dst_col] = movingPiece;
+
+        return boardClone;
     }
 
-    private (int, int) MakeMove(Move m, Piece movingPiece)
+    private static void MakeMove(Move m, Board board, Piece movingPiece)
     {
         var (src_row, src_col, dst_row, dst_col) = m;
         if (m.IsCapture)
         {
             int dy = src_row - dst_row > 0 ? -1 : 1;
             int dx = src_col - dst_col > 0 ? -1 : 1;
-            this[dst_row - dy, dst_col - dx] = Piece.EMPTY;
+            board[dst_row - dy, dst_col - dx] = null;
         }
 
+        movingPiece.SetPosition(dst_row, dst_col);
+
         if (m.NextMove is not null)
-            return MakeMove(m.NextMove, movingPiece);
+            MakeMove(m.NextMove, board, movingPiece);
         else
         {
-            this[dst_row, dst_col] = movingPiece;
-            return (dst_row, dst_col);
+            board[dst_row, dst_col] = movingPiece;
         }
     }
 
     public List<Move> GetAllPossibleMoves(int src_row, int src_col)
     {
-        return GetAllPossibleMoves(src_row, src_col, this[src_row, src_col], new Board(this));
+        Piece? movingPiece = this[src_row, src_col];
+
+        if (movingPiece == null)
+            throw new InvalidOperationException("In this position there is no piece");
+
+        return GetAllPossibleMoves(src_row, src_col, movingPiece, new Board(this));
     }
 
     private List<Move> GetAllPossibleMoves(int src_row, int src_col, Piece movingPiece, Board boardClone, bool onlyCaptures = false)
     {
-        if (movingPiece == Piece.EMPTY)
-            throw new InvalidOperationException("You can't move empty piece");
+        List<Move> possibleMoves = new List<Move>();
+        List<Move> captures;
 
+        if (movingPiece.IsKing)
+            captures = boardClone.GetCapturesForKing(src_row,src_col, movingPiece);
+        else
+            captures = boardClone.GetCapturesForPiece(src_row, src_col, movingPiece);
+
+        if (captures.Count() > 0)
+        {
+            foreach (Move move in captures)
+            {
+                var (_, _, dst_row, dst_col) = move;
+
+                boardClone.MakeMove(move);
+                var nextMoves = boardClone.GetAllPossibleMoves(dst_row, dst_col, movingPiece, new Board(boardClone), true);
+
+                foreach (Move nextMove in nextMoves)
+                {
+                    var moveClone = new Move(move);
+                    moveClone.NextMove = nextMove;
+                    possibleMoves.Add(moveClone);
+                }
+                if (nextMoves.Count() == 0)
+                {
+                    possibleMoves.Add(move);
+                }
+            }
+        }
+        else if (!onlyCaptures)
+        {
+            if (movingPiece.IsKing)
+                possibleMoves.AddRange(GetAllJumpsForKing(src_row, src_col, movingPiece));
+            else
+                possibleMoves.AddRange(GetAllJumpsForPiece(src_row, src_col, movingPiece));
+        }
+
+        return possibleMoves;
+    }
+
+    private List<Move> GetAllJumpsForPiece(int src_row, int src_col, Piece movingPiece)
+    {
+        if (movingPiece.IsKing)
+            throw new InvalidCastException("You can call this method only for normal pieces");
+
+        List<(int, int)> jumpDirections;
         List<Move> possibleMoves = new List<Move>();
 
-        // TODO - remove redundant code
-        if (IsKing(movingPiece))
+        if (movingPiece.PieceColor == PieceColor.BLACK)
         {
-            var kingCaptures = boardClone. GetCapturesForKing(src_row, src_col);
-            if (kingCaptures.Count() > 0)
+            jumpDirections = new()
             {
-                foreach (Move move in kingCaptures)
-                {
-                    var (_, _, dst_row, dst_col) = move;
-                    boardClone.MakeMove(move);
-                    var nextMoves = boardClone.GetAllPossibleMoves(dst_row, dst_col, movingPiece, boardClone, true);
-                    foreach (Move nextMove in nextMoves)
-                    {
-                        move.NextMove = nextMove;
-                    }
-                    if (nextMoves.Count() == 0)
-                    {
-                        possibleMoves.Add(move);
-                    }
-                }
-                possibleMoves.AddRange(kingCaptures);
-            }
-            else if(!onlyCaptures)
-            {
-                possibleMoves.AddRange(GetAllJumpsForKing(src_row, src_col, movingPiece));
-            }
+                (1, 1),
+                (1, -1)
+            };
         }
         else
         {
-            var pieceCaptures = boardClone.GetCapturesForPiece(src_row, src_col, movingPiece);
-            if (pieceCaptures.Count() > 0)
+            jumpDirections = new()
             {
-                foreach (Move move in pieceCaptures)
-                {
-                    var (_, _, dst_row, dst_col) = move;
-                    boardClone.MakeMove(move);
-                    var nextMoves = boardClone.GetAllPossibleMoves(dst_row, dst_col, movingPiece, boardClone, true);
-                    foreach (Move nextMove in nextMoves)
-                    {
-                        var moveClone = new Move(move);
-                        moveClone.NextMove = nextMove;
-                        possibleMoves.Add(moveClone);
-                    }
-                    if(nextMoves.Count() == 0)
-                    {
-                        possibleMoves.Add(move);
-                    }
-                }
-            }
-            else if (!onlyCaptures)
-            {
-                possibleMoves.AddRange(GetAllJumpsForPiece(src_row, src_col, movingPiece));
-            }
+                (-1, 1),
+                (-1, -1)
+            };
+        }
+
+        // filter jump directions that leads out of the board
+        jumpDirections = jumpDirections.FindAll(x => IsPositionInBoard(x.Item1 + src_row, x.Item2 + src_col));
+
+        foreach (var (dy, dx) in jumpDirections)
+        {
+            int dst_col = src_col + dx;
+            int dst_row = src_row + dy;
+            Piece? pieceAtDestination = this[dst_row, dst_col];
+
+            if (pieceAtDestination == null)
+                possibleMoves.Add(new Move(src_row, src_col, dst_row, dst_col));
+        }
+        return possibleMoves;
+    }
+
+    private List<Move> GetCapturesForPiece(int src_row, int src_col, Piece movingPiece)
+    {
+        if (movingPiece.IsKing)
+            throw new InvalidCastException("You can call this method only for normal pieces");
+
+        List<(int, int)> jumpDirections = new()
+        {
+            (-2, -2),
+            (2, 2),
+            (2, -2),
+            (-2, 2),
+        };
+        List<Move> possibleMoves = new List<Move>();
+
+        jumpDirections = jumpDirections.FindAll(x => IsPositionInBoard(x.Item1 + src_row, x.Item2 + src_col)).ToList();
+
+        foreach (var (dy, dx) in jumpDirections)
+        {
+            int dst_col = src_col + dx;
+            int dst_row = src_row + dy;
+
+            Piece? pieceAtDestination = this[dst_row, dst_col];
+            Piece? capturedPiece = this[dst_row - dy / 2, dst_col - dx / 2];
+
+            if (pieceAtDestination == null && capturedPiece != null && HasOppositeColor(capturedPiece, movingPiece))
+                possibleMoves.Add(new Move(src_row, src_col, dst_row, dst_col, true));
+
         }
 
         return possibleMoves;
@@ -174,7 +222,7 @@ public class Board
 
     private List<Move> GetAllJumpsForKing(int src_row, int src_col, Piece movingPiece)
     {
-        if (!IsKing(movingPiece))
+        if (movingPiece.IsKing)
             throw new InvalidCastException("You can call this method only for kings");
 
         List<(int, int)> directions = new()
@@ -191,13 +239,14 @@ public class Board
         {
             int dst_col = src_col;
             int dst_row = src_row;
-            while (dst_col > 0 && dst_row > 0)
+
+            while (IsPositionInBoard(dst_row, dst_col))
             {
                 dst_row += dx;
                 dst_col += dy;
-                Piece pieceAtDestination = this[dst_row, dst_col];
+                Piece? pieceAtDestination = this[dst_row, dst_col];
 
-                if (pieceAtDestination == Piece.EMPTY)
+                if (pieceAtDestination == null)
                     possibleMoves.Add(new Move(src_row, src_col, dst_row, dst_col));
                 else
                     break;
@@ -207,80 +256,9 @@ public class Board
         return possibleMoves;
     }
 
-    private List<Move> GetAllJumpsForPiece(int src_row, int src_col, Piece movingPiece)
+    private List<Move> GetCapturesForKing(int src_row, int src_col, Piece movingPiece)
     {
-        if (movingPiece != Piece.BLACK && movingPiece != Piece.WHITE)
-            throw new InvalidCastException("You can call this method only for normal pieces");
-
-        List<(int, int)> directions;
-
-        if (this[src_row, src_col] == Piece.BLACK)
-        {
-            directions = new()
-            {
-                (1, 1),
-                (1, -1)
-            };
-        }
-        else
-        {
-            directions = new()
-            {
-                (-1, 1),
-                (-1, -1)
-            };
-        }
-
-        List<Move> possibleMoves = new List<Move>();
-        directions = directions.FindAll(x => IsPositionInBoard(x.Item1 + src_row, x.Item2 + src_col));
-        foreach (var (dy, dx) in directions)
-        {
-            int dst_col = src_col + dx;
-            int dst_row = src_row + dy;
-            Piece pieceAtDestination = this[dst_row, dst_col];
-
-            if (pieceAtDestination == Piece.EMPTY)
-                possibleMoves.Add(new Move(src_row, src_col, dst_row, dst_col));
-        }
-        return possibleMoves;
-    }
-
-    private List<Move> GetCapturesForPiece(int src_row, int src_col, Piece movingPiece)
-    {
-        if (movingPiece != Piece.BLACK && movingPiece != Piece.WHITE)
-            throw new InvalidCastException("You can call this method only for normal pieces");
-
-        List<(int, int)> moves = new()
-        {
-            (-2, -2),
-            (2, 2),
-            (2, -2),
-            (-2, 2),
-        };
-
-        moves = moves.FindAll(x => IsPositionInBoard(x.Item1 + src_row, x.Item2 + src_col)).ToList();
-
-        List<Move> possibleMoves = new List<Move>();
-
-        foreach (var (dy, dx) in moves)
-        {
-            int dst_col = src_col + dx;
-            int dst_row = src_row + dy;
-
-            Piece pieceAtDestination = this[dst_row, dst_col];
-            Piece capturedPiece = this[dst_row - dy / 2, dst_col - dx / 2];
-
-            if (pieceAtDestination == Piece.EMPTY && HasOppositeColor(capturedPiece, movingPiece))
-                possibleMoves.Add(new Move(src_row, src_col, dst_row, dst_col, true));
-
-        }
-
-        return possibleMoves;
-    }
-
-    private List<Move> GetCapturesForKing(int src_row, int src_col)
-    {
-        if (!IsKing(this[src_row, src_col]))
+        if (movingPiece.IsKing)
             throw new InvalidCastException("You can call this method only for kings");
 
         List<(int, int)> directions = new()
@@ -291,38 +269,40 @@ public class Board
             (-1, 1),
         };
 
-        Piece movingPiece = this[src_row, src_col];
-
         List<Move> possibleMoves = new List<Move>();
 
-        foreach (var (dx, dy) in directions)
+        foreach (var (dy, dx) in directions)
         {
-            bool pieceOccured = false;
+            bool oponentOccured = false;
             int dst_col = src_col;
             int dst_row = src_row;
-            while (dst_col > 0 && dst_row > 0)
+
+            while (IsPositionInBoard(dst_row, dst_col))
             {
                 dst_row += dx;
                 dst_col += dy;
-                Piece pieceAtDestination = this[dst_row, dst_col];
+                Piece? pieceAtDestination = this[dst_row, dst_col];
 
-                if (!pieceOccured)
+                if (oponentOccured)
                 {
-
-                    if (HasOppositeColor(pieceAtDestination, movingPiece))
-                        pieceOccured = true;
-
+                    if (pieceAtDestination == null)
+                        possibleMoves.Add(new Move(src_row, src_col, dst_row, dst_col, true));
                     else
                         break;
                 }
                 else
                 {
-                    if (pieceAtDestination == Piece.EMPTY)
-                        possibleMoves.Add(new Move(src_row, src_col, dst_row, dst_col, true));
-
-                    break;
+                    if (pieceAtDestination == null)
+                        continue;
+                    else
+                    {
+                        if (HasOppositeColor(pieceAtDestination, movingPiece))
+                            oponentOccured = true;
+                        else
+                            // friend occured
+                            break;
+                    }
                 }
-
             }
         }
 
@@ -336,22 +316,7 @@ public class Board
 
     private static bool HasOppositeColor(Piece p1, Piece p2)
     {
-        return IsPieceWhite(p1) && IsPieceBlack(p2) || IsPieceBlack(p1) && IsPieceWhite(p2);
-    }
-
-    private static bool IsKing(Piece p)
-    {
-        return p == Piece.BLACK_KING || p == Piece.WHITE_KING;
-    }
-
-    private static bool IsPieceWhite(Piece p)
-    {
-        return p == Piece.WHITE || p == Piece.WHITE_KING;
-    }
-
-    private static bool IsPieceBlack(Piece p)
-    {
-        return p == Piece.BLACK || p == Piece.BLACK_KING;
+        return p1.PieceColor == PieceColor.WHITE && p2.PieceColor == PieceColor.BLACK || p2.PieceColor == PieceColor.WHITE && p1.PieceColor == PieceColor.BLACK;
     }
 
     private void InitOrResetBoard()
@@ -367,13 +332,21 @@ public class Board
                 j += 2)
             {
                 if (i < 3)
-                    this[i, j] = Piece.BLACK;
+                    this[i, j] = new Piece(i, j, PieceColor.BLACK);
                 else if (i > 4)
-                    this[i, j] = Piece.WHITE;
+                    this[i, j] = new Piece(i, j, PieceColor.WHITE);
                 else
-                    this[i, j] = Piece.EMPTY;
+                    this[i, j] = null;
             }
         }
+    }
+
+    private bool IsWhiteTile(int col, int row)
+    {
+        if (!IsPositionInBoard(row, col))
+            throw new InvalidOperationException("this position do not exist on the board");
+
+        return col % 2 == 0 && row % 2 == 0 || col % 2 == 1 && row % 2 == 1;
     }
 
     public override string ToString()
@@ -385,30 +358,21 @@ public class Board
             sb.Append($"{i}|");
             for (int j = 0; j < BOARD_SIZE; j++)
             {
-                Piece movingPiece = this[i, j];
+                Piece? movingPiece = this[i, j];
 
-                switch (movingPiece)
+                if (movingPiece == null)
+                    sb.Append('-');
+                else if (movingPiece.PieceColor == PieceColor.WHITE)
+                    sb.Append('w');
+                else if (movingPiece.PieceColor == PieceColor.BLACK)
+                    sb.Append('b');
+                else
                 {
-                    case Piece.BLACK:
-                        sb.Append('b');
-                        break;
-                    case Piece.BLACK_KING:
-                        sb.Append('B');
-                        break;
-                    case Piece.WHITE:
-                        sb.Append('w');
-                        break;
-                    case Piece.WHITE_KING:
-                        sb.Append('W');
-                        break;
-                    case Piece.EMPTY:
-                        sb.Append('-');
-                        break;
-                    default:
+                    if (IsWhiteTile(i, j))
                         sb.Append('~');
-                        break;
+                    else
+                        sb.Append('-');
                 }
-
             }
             sb.AppendLine();
         }
