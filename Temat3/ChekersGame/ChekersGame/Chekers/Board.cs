@@ -21,7 +21,14 @@ public class Board
 
     public Board(Board board)
     {
-        boardBlackTiles = board.boardBlackTiles.Clone() as Piece[,];
+        boardBlackTiles = new Piece[BOARD_SIZE / 2, BOARD_SIZE];
+        for (int i = 0; i < boardBlackTiles.GetLength(0); i++)
+        {
+            for (int j = 0; j < boardBlackTiles.GetLength(1); j++)
+            {
+                boardBlackTiles[i, j] = board.boardBlackTiles[i, j];
+            }
+        }
     }
 
     public Piece? this[int row, int col]
@@ -112,7 +119,7 @@ public class Board
         List<Move> captures;
 
         if (movingPiece.IsKing)
-            captures = boardClone.GetCapturesForKing(src_row,src_col, movingPiece);
+            captures = boardClone.GetCapturesForKing(src_row, src_col, movingPiece);
         else
             captures = boardClone.GetCapturesForPiece(src_row, src_col, movingPiece);
 
