@@ -45,5 +45,24 @@ public class Piece
         this.row = row;
         this.col = col;
     }
+
+    public override string ToString()
+    {
+        string result = "";
+
+        if (pieceColor == PieceColor.WHITE)
+            result += "WHITE";
+        else
+            result += "BLACK";
+
+        if (IsKing)
+            result += " KING";
+        else
+            result += " PAWN";
+
+        result += $" ({row},{col})";
+
+        return result;
+    }
 }
 

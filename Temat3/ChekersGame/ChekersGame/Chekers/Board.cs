@@ -26,7 +26,11 @@ public class Board
         {
             for (int j = 0; j < boardBlackTiles.GetLength(1); j++)
             {
-                boardBlackTiles[i, j] = board.boardBlackTiles[i, j];
+                var pieceAtPosition = board.boardBlackTiles[i, j];
+                if (pieceAtPosition != null)
+                    boardBlackTiles[i, j] = new Piece(pieceAtPosition);
+                else
+                    boardBlackTiles[i, j] = null;
             }
         }
     }
@@ -57,30 +61,51 @@ public class Board
     {
         var (src_row, src_col, dst_row, dst_col) = m;
 
-        Piece? movingPiece = this[src_row, src_col];
-
-        if (movingPiece == null)
+        if (this[src_row, src_col] == null)
             throw new InvalidOperationException("Can't move non existing piece");
 
         Board boardClone = new Board(this);
+
+        Piece movingPiece = boardClone[src_row, src_col];
 
         boardClone[src_row, src_col] = null;
 
         if (m.IsCapture)
         {
-            int dy = src_row - dst_row > 0 ? -1 : 1;
-            int dx = src_col - dst_col > 0 ? -1 : 1;
-            boardClone[dst_row - dy, dst_col - dx] = null;
+            int dy = src_row < dst_row ? -1 : 1;
+            int dx = src_col < dst_col ? -1 : 1;
+            boardClone[dst_row + dy, dst_col + dx] = null;
         }
-
-        movingPiece.SetPosition(dst_row, dst_col);
 
         if (m.NextMove is not null)
             MakeMove(m.NextMove, boardClone, movingPiece);
         else
+        {
             boardClone[dst_row, dst_col] = movingPiece;
+            movingPiece.SetPosition(dst_row, dst_col);
+        }
 
         return boardClone;
+    }
+
+    private static void MakeMove(Move m, Board board, Piece movingPiece)
+    {
+        var (src_row, src_col, dst_row, dst_col) = m;
+        if (m.IsCapture)
+        {
+            int dy = src_row < dst_row ? -1 : 1;
+            int dx = src_col < dst_col ? -1 : 1;
+            board[dst_row + dy, dst_col + dx] = null;
+        }
+
+
+        if (m.NextMove is not null)
+            MakeMove(m.NextMove, board, movingPiece);
+        else
+        {
+            board[dst_row, dst_col] = movingPiece;
+            movingPiece.SetPosition(dst_row, dst_col);
+        }
     }
 
     public List<Move> GetAllPossibleMoves(Piece p)
@@ -90,13 +115,26 @@ public class Board
         if (movingPiece == null)
             throw new InvalidOperationException("In this position there is no piece");
 
-        return GetAllPossibleMoves(p.Row, p.Col, movingPiece, new Board(this));
+        return GetAllPossibleMoves(p.Row, p.Col, movingPiece, this);
+    }
+
+    public List<Move> GetAllPossibleMoves(PieceColor color)
+    {
+        List<Piece> pieces = GetPieces(color);
+        List<Move> avalibleMoves = new List<Move>();
+
+        foreach (Piece piece in pieces)
+        {
+            avalibleMoves.AddRange(GetAllPossibleMoves(piece));
+        }
+
+        return avalibleMoves;
     }
 
     public List<Piece> GetPieces(PieceColor color)
     {
         List<Piece> pieces = new List<Piece>();
-        foreach(Piece? piece in boardBlackTiles)
+        foreach (Piece? piece in boardBlackTiles)
         {
             if (piece != null && piece.PieceColor == color)
                 pieces.Add(piece);
@@ -104,35 +142,15 @@ public class Board
         return pieces;
     }
 
-    private static void MakeMove(Move m, Board board, Piece movingPiece)
-    {
-        var (src_row, src_col, dst_row, dst_col) = m;
-        if (m.IsCapture)
-        {
-            int dy = src_row - dst_row > 0 ? -1 : 1;
-            int dx = src_col - dst_col > 0 ? -1 : 1;
-            board[dst_row - dy, dst_col - dx] = null;
-        }
-
-        movingPiece.SetPosition(dst_row, dst_col);
-
-        if (m.NextMove is not null)
-            MakeMove(m.NextMove, board, movingPiece);
-        else
-        {
-            board[dst_row, dst_col] = movingPiece;
-        }
-    }
-
-    private List<Move> GetAllPossibleMoves(int src_row, int src_col, Piece movingPiece, Board boardClone, bool onlyCaptures = false)
+    private static List<Move> GetAllPossibleMoves(int src_row, int src_col, Piece movingPiece, Board board, bool onlyCaptures = false)
     {
         List<Move> possibleMoves = new List<Move>();
         List<Move> captures;
 
         if (movingPiece.IsKing)
-            captures = boardClone.GetCapturesForKing(src_row, src_col, movingPiece);
+            captures = board.GetCapturesForKing(src_row, src_col, movingPiece);
         else
-            captures = boardClone.GetCapturesForPiece(src_row, src_col, movingPiece);
+            captures = board.GetCapturesForPiece(src_row, src_col, movingPiece);
 
         if (captures.Count() > 0)
         {
@@ -140,8 +158,8 @@ public class Board
             {
                 var (_, _, dst_row, dst_col) = move;
 
-                boardClone.MakeMove(move);
-                var nextMoves = boardClone.GetAllPossibleMoves(dst_row, dst_col, movingPiece, new Board(boardClone), true);
+                var boardNewState = board.MakeMove(move);
+                var nextMoves = GetAllPossibleMoves(dst_row, dst_col, movingPiece, boardNewState, true);
 
                 foreach (Move nextMove in nextMoves)
                 {
@@ -158,9 +176,9 @@ public class Board
         else if (!onlyCaptures)
         {
             if (movingPiece.IsKing)
-                possibleMoves.AddRange(GetAllJumpsForKing(src_row, src_col, movingPiece));
+                possibleMoves.AddRange(board.GetAllJumpsForKing(src_row, src_col, movingPiece));
             else
-                possibleMoves.AddRange(GetAllJumpsForPiece(src_row, src_col, movingPiece));
+                possibleMoves.AddRange(board.GetAllJumpsForPiece(src_row, src_col, movingPiece));
         }
 
         return possibleMoves;
@@ -359,7 +377,7 @@ public class Board
         }
     }
 
-    private bool IsWhiteTile(int col, int row)
+    private bool IsWhiteTile(int row, int col)
     {
         if (!IsPositionInBoard(row, col))
             throw new InvalidOperationException("this position do not exist on the board");

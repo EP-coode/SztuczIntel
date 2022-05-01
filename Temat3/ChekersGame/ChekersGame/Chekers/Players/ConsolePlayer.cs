@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using ChekersGame.Chekers;
 
-namespace ChekersGame;
+namespace ChekersGame.Chekers.Players;
 
 public class ConsolePlayer : Player
 {

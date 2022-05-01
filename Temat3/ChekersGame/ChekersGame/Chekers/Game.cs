@@ -29,7 +29,7 @@ public class Game
         _gameBoard = new Board();
         _turns = 0;
         _lastNonIddleNonKingPieceMove = 0;
-        UpdateAvalibleMoves();
+        _currentPlayerAvalibleMoves = GameBoard.GetAllPossibleMoves(MovingPlayer.PlayerPieceColor);
     }
 
     public void NextMove()
@@ -37,13 +37,13 @@ public class Game
         if (IsFinished())
             throw new InvalidOperationException("This game is finished");
 
-        Move playerMove = MovingPlayer.MakeMove(new Board(GameBoard));
+        Move playerMove = MovingPlayer.MakeMove(GameBoard);
 
         bool isMoveValid = _currentPlayerAvalibleMoves.Any(move => playerMove.Equals(move));
 
         if (isMoveValid)
         {
-            var (_, _, row, col) = playerMove;
+            var (row, col, _, _) = playerMove;
             Piece? movingPiece = GameBoard[row, col];
             if (movingPiece != null && !movingPiece.IsKing && !playerMove.IsCapture)
             {
@@ -59,7 +59,7 @@ public class Game
         }
 
         SwapPlayers();
-        UpdateAvalibleMoves();
+        _currentPlayerAvalibleMoves = GameBoard.GetAllPossibleMoves(MovingPlayer.PlayerPieceColor);
     }
 
     public bool IsFinished()
@@ -85,18 +85,5 @@ public class Game
             _movingPlayer = BlackPlayer;
         else
             _movingPlayer = WhitePlayer;
-    }
-
-    private void UpdateAvalibleMoves()
-    {
-        List<Piece> pieces = GameBoard.GetPieces(_movingPlayer.PlayerPieceColor);
-        List<Move> avalibleMoves = new List<Move>();
-
-        foreach (Piece piece in pieces)
-        {
-            avalibleMoves.AddRange(GameBoard.GetAllPossibleMoves(piece));
-        }
-
-        _currentPlayerAvalibleMoves = avalibleMoves;
     }
 }
