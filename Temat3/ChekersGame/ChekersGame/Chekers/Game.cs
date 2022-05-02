@@ -16,6 +16,8 @@ public class Game
     private int _turns;
     private int _lastNonIddleNonKingPieceMove;
 
+    public int Turn { get { return _turns; } }
+
     public PieceColor MovingPlayer { get { return _movingPlayer; } }
     public Board GameBoard { get { return _gameBoard; } }
 
@@ -26,6 +28,15 @@ public class Game
         _turns = 0;
         _lastNonIddleNonKingPieceMove = 0;
         _currentPlayerAvalibleMoves = GameBoard.GetAllPossibleMoves(MovingPlayer);
+    }
+
+    public Game(Game g)
+    {
+        _movingPlayer = g.MovingPlayer;
+        _gameBoard = new Board(g.GameBoard);
+        _turns = g._turns;
+        _lastNonIddleNonKingPieceMove = g._lastNonIddleNonKingPieceMove;
+        _currentPlayerAvalibleMoves = g._currentPlayerAvalibleMoves;
     }
 
     public void NextMove(Move playerMove)

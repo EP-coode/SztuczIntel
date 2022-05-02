@@ -3,11 +3,12 @@ using ChekersGame.Chekers;
 using ChekersGame;
 using ChekersGame.Chekers.Players;
 using System.Collections.Generic;
+using ChekersGame.Chekers.AI;
 
 Dictionary<PieceColor, Player> players = new()
 {
     { PieceColor.WHITE, new RandomPlayer(PieceColor.WHITE) },
-    { PieceColor.BLACK, new RandomPlayer(PieceColor.BLACK) }
+    { PieceColor.BLACK, new MinimaxAIPlayer(PieceColor.BLACK, 3) }
 };
 
 Game game = new Game();
@@ -19,4 +20,5 @@ while (!game.IsFinished())
     game.NextMove(move);
 }
 Console.WriteLine("KONIEC");
+Console.WriteLine($"Przegral {game.MovingPlayer}, tura: {game.Turn}");
 Console.WriteLine(game.GameBoard);
