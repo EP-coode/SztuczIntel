@@ -17,12 +17,12 @@ public class MinimaxAIPlayer : Player
 
     public override Move MakeMove(Board b)
     {
-        throw new NotImplementedException();
+       throw new NotImplementedException();
     }
 
-    private (Move, float) MiniMax(Board g, int depth, bool maxPlayer)
-    {
-        throw new NotImplementedException();
-    }
+    //private float MiniMax(Board board, int depth, bool maximizingPlayer)
+    //{
+    //    if(depth == 0 || board)
+    //}
 }
 

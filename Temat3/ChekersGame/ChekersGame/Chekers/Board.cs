@@ -147,6 +147,16 @@ public class Board
         return pieces;
     }
 
+    public List<Piece> GetPieces()
+    {
+        List<Piece> pieces = new List<Piece>();
+        foreach (Piece? piece in boardBlackTiles)
+        {
+            if (piece != null)
+                pieces.Add(piece);
+        }
+        return pieces;
+    }
     private static List<Move> GetAllPossibleMoves(int src_row, int src_col, Piece movingPiece, Board board, bool onlyCaptures = false, int depth = 0)
     {
         List<Move> possibleMoves = new List<Move>();

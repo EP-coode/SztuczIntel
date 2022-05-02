@@ -2,15 +2,21 @@
 using ChekersGame.Chekers;
 using ChekersGame;
 using ChekersGame.Chekers.Players;
+using System.Collections.Generic;
 
-Player player1 = new RandomPlayer(PieceColor.WHITE);
-Player player2 = new RandomPlayer(PieceColor.BLACK);
+Dictionary<PieceColor, Player> players = new()
+{
+    { PieceColor.WHITE, new RandomPlayer(PieceColor.WHITE) },
+    { PieceColor.BLACK, new RandomPlayer(PieceColor.BLACK) }
+};
 
-Game game = new Game(player1, player2);
+Game game = new Game();
 
 while (!game.IsFinished())
 {
     Console.WriteLine(game.GameBoard);
-    game.NextMove();
+    var move = players[game.MovingPlayer].MakeMove(game.GameBoard);
+    game.NextMove(move);
 }
 Console.WriteLine("KONIEC");
+Console.WriteLine(game.GameBoard);

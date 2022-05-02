@@ -10,34 +10,28 @@ public class Game
 {
     public const int MAX_NO_OF_KINGS_MOVES = 10;
 
-    private Player _movingPlayer;
+    private PieceColor _movingPlayer;
     private List<Move> _currentPlayerAvalibleMoves;
     private Board _gameBoard;
     private int _turns;
     private int _lastNonIddleNonKingPieceMove;
 
-    public Player MovingPlayer { get { return _movingPlayer; } }
+    public PieceColor MovingPlayer { get { return _movingPlayer; } }
     public Board GameBoard { get { return _gameBoard; } }
-    public Player WhitePlayer { get; }
-    public Player BlackPlayer { get; }
 
-    public Game(Player whitePlayer, Player blackPlayer)
+    public Game()
     {
-        WhitePlayer = whitePlayer;
-        BlackPlayer = blackPlayer;
-        _movingPlayer = whitePlayer;
+        _movingPlayer = PieceColor.WHITE;
         _gameBoard = new Board();
         _turns = 0;
         _lastNonIddleNonKingPieceMove = 0;
-        _currentPlayerAvalibleMoves = GameBoard.GetAllPossibleMoves(MovingPlayer.PlayerPieceColor);
+        _currentPlayerAvalibleMoves = GameBoard.GetAllPossibleMoves(MovingPlayer);
     }
 
-    public void NextMove()
+    public void NextMove(Move playerMove)
     {
         if (IsFinished())
             throw new InvalidOperationException("This game is finished");
-
-        Move playerMove = MovingPlayer.MakeMove(GameBoard);
 
         bool isMoveValid = _currentPlayerAvalibleMoves.Any(move => playerMove.Equals(move));
 
@@ -59,7 +53,7 @@ public class Game
         }
 
         SwapPlayers();
-        _currentPlayerAvalibleMoves = GameBoard.GetAllPossibleMoves(MovingPlayer.PlayerPieceColor);
+        _currentPlayerAvalibleMoves = GameBoard.GetAllPossibleMoves(MovingPlayer);
     }
 
     public bool IsFinished()
@@ -67,7 +61,7 @@ public class Game
         if (_currentPlayerAvalibleMoves.Count() == 0)
             return true;
 
-        int piecesCount = GameBoard.GetPieces(MovingPlayer.PlayerPieceColor).Count();
+        int piecesCount = GameBoard.GetPieces(MovingPlayer).Count();
 
         if (piecesCount <= 0)
             return true;
@@ -81,9 +75,9 @@ public class Game
 
     private void SwapPlayers()
     {
-        if (MovingPlayer == WhitePlayer)
-            _movingPlayer = BlackPlayer;
+        if (MovingPlayer == PieceColor.WHITE)
+            _movingPlayer = PieceColor.BLACK;
         else
-            _movingPlayer = WhitePlayer;
+            _movingPlayer = PieceColor.WHITE;
     }
 }
