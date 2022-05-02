@@ -70,6 +70,7 @@ public class Board
 
         boardClone[src_row, src_col] = null;
 
+
         if (m.IsCapture)
         {
             int dy = src_row < dst_row ? -1 : 1;
@@ -83,6 +84,8 @@ public class Board
         {
             boardClone[dst_row, dst_col] = movingPiece;
             movingPiece.SetPosition(dst_row, dst_col);
+            if (CanBecameKing(movingPiece))
+                movingPiece.IsKing = true;
         }
 
         return boardClone;
@@ -105,6 +108,8 @@ public class Board
         {
             board[dst_row, dst_col] = movingPiece;
             movingPiece.SetPosition(dst_row, dst_col);
+            if (CanBecameKing(movingPiece))
+                movingPiece.IsKing = true;
         }
     }
 
@@ -142,7 +147,7 @@ public class Board
         return pieces;
     }
 
-    private static List<Move> GetAllPossibleMoves(int src_row, int src_col, Piece movingPiece, Board board, bool onlyCaptures = false)
+    private static List<Move> GetAllPossibleMoves(int src_row, int src_col, Piece movingPiece, Board board, bool onlyCaptures = false, int depth = 0)
     {
         List<Move> possibleMoves = new List<Move>();
         List<Move> captures;
@@ -152,14 +157,19 @@ public class Board
         else
             captures = board.GetCapturesForPiece(src_row, src_col, movingPiece);
 
+        if (depth > 100 && captures.Count() > 0)
+            Console.WriteLine("BOOM");
+
         if (captures.Count() > 0)
         {
             foreach (Move move in captures)
             {
-                var (_, _, dst_row, dst_col) = move;
+                int finalRow = move.FinalRow;
+                int finalCol = move.FinalCol;
 
                 var boardNewState = board.MakeMove(move);
-                var nextMoves = GetAllPossibleMoves(dst_row, dst_col, movingPiece, boardNewState, true);
+                var newMovingPiece = boardNewState[finalRow, finalCol];
+                var nextMoves = GetAllPossibleMoves(finalRow, finalCol, newMovingPiece, boardNewState, true, depth + 1);
 
                 foreach (Move nextMove in nextMoves)
                 {
@@ -258,7 +268,7 @@ public class Board
 
     private List<Move> GetAllJumpsForKing(int src_row, int src_col, Piece movingPiece)
     {
-        if (movingPiece.IsKing)
+        if (!movingPiece.IsKing)
             throw new InvalidCastException("You can call this method only for kings");
 
         List<(int, int)> directions = new()
@@ -276,10 +286,10 @@ public class Board
             int dst_col = src_col;
             int dst_row = src_row;
 
-            while (IsPositionInBoard(dst_row, dst_col))
+            while (IsPositionInBoard(dst_row + dy, dst_col + dx))
             {
-                dst_row += dx;
-                dst_col += dy;
+                dst_row += dy;
+                dst_col += dx;
                 Piece? pieceAtDestination = this[dst_row, dst_col];
 
                 if (pieceAtDestination == null)
@@ -294,7 +304,7 @@ public class Board
 
     private List<Move> GetCapturesForKing(int src_row, int src_col, Piece movingPiece)
     {
-        if (movingPiece.IsKing)
+        if (!movingPiece.IsKing)
             throw new InvalidCastException("You can call this method only for kings");
 
         List<(int, int)> directions = new()
@@ -313,18 +323,17 @@ public class Board
             int dst_col = src_col;
             int dst_row = src_row;
 
-            while (IsPositionInBoard(dst_row, dst_col))
+            while (IsPositionInBoard(dst_row + dy, dst_col + dx))
             {
-                dst_row += dx;
-                dst_col += dy;
+                dst_row += dy;
+                dst_col += dx;
                 Piece? pieceAtDestination = this[dst_row, dst_col];
 
                 if (oponentOccured)
                 {
                     if (pieceAtDestination == null)
                         possibleMoves.Add(new Move(src_row, src_col, dst_row, dst_col, true));
-                    else
-                        break;
+                    break;
                 }
                 else
                 {
@@ -385,6 +394,22 @@ public class Board
         return col % 2 == 0 && row % 2 == 0 || col % 2 == 1 && row % 2 == 1;
     }
 
+    private static bool CanBecameKing(Piece p)
+    {
+        if (p.IsKing)
+            return false;
+
+        switch (p.PieceColor)
+        {
+            case PieceColor.BLACK:
+                return p.Row == 7;
+            case PieceColor.WHITE:
+                return p.Row == 0;
+            default:
+                return false;
+        }
+    }
+
     public override string ToString()
     {
         StringBuilder sb = new();
@@ -399,9 +424,9 @@ public class Board
                 if (movingPiece == null)
                     sb.Append('-');
                 else if (movingPiece.PieceColor == PieceColor.WHITE)
-                    sb.Append('w');
+                    sb.Append(movingPiece.IsKing ? 'W' : 'w');
                 else if (movingPiece.PieceColor == PieceColor.BLACK)
-                    sb.Append('b');
+                    sb.Append(movingPiece.IsKing ? 'B' : 'b');
                 else
                 {
                     if (IsWhiteTile(i, j))

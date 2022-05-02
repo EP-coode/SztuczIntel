@@ -13,10 +13,32 @@ public class Move
     public Move? NextMove { get; set; }
     public bool IsCapture { get; set; }
 
+    public int FinalRow
+    {
+        get
+        {
+            if (NextMove == null)
+                return dest_row;
+            else return NextMove.FinalRow;
+        }
+
+
+    }
+
+    public int FinalCol
+    {
+        get
+        {
+            if (NextMove == null)
+                return dest_col;
+            else return NextMove.FinalCol;
+        }
+    }
+
     public void Deconstruct(out int src_row, out int src_col, out int dst_row, out int dst_col)
     {
         src_row = this.src_row;
-        src_col = this.src_col;    
+        src_col = this.src_col;
         dst_row = this.dest_row;
         dst_col = this.dest_col;
     }
@@ -32,7 +54,7 @@ public class Move
 
     public Move(Move m)
     {
-        var(src_row, src_col, dst_row, dst_col) = m;
+        var (src_row, src_col, dst_row, dst_col) = m;
         this.src_row = src_row;
         this.src_col = src_col;
         this.dest_row = dst_row;
@@ -42,15 +64,15 @@ public class Move
 
     public override bool Equals(object? obj)
     {
-        if(obj == null || !typeof(Move).IsInstanceOfType(obj))
+        if (obj == null || !typeof(Move).IsInstanceOfType(obj))
             return false;
 
         if (obj == this)
             return true;
 
         Move other = (Move)obj;
-        
-        if(other.src_col != src_col)
+
+        if (other.src_col != src_col)
             return false;
 
         if (other.src_row != src_row)
@@ -67,7 +89,7 @@ public class Move
 
         if (NextMove == null)
             return true;
-        else 
+        else
             return NextMove.Equals(other.NextMove);
     }
 
