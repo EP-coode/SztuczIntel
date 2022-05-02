@@ -15,8 +15,10 @@ public class ConsolePlayer : Player
 
     }
 
-    public override Move MakeMove(Board b)
+    public override Move MakeMove(Game g)
     {
+        var b = g.GameBoard;
+
         if(PlayerPieceColor == PieceColor.BLACK)
             Console.WriteLine($"----------GRACZ CZARNY------------");
         else

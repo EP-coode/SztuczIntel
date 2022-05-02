@@ -15,14 +15,14 @@ public class MinimaxAIPlayer : Player
     {
     }
 
-    public override Move MakeMove(Board b)
+    public override Move MakeMove(Game g)
     {
        throw new NotImplementedException();
     }
 
-    //private float MiniMax(Board board, int depth, bool maximizingPlayer)
+    //private float MiniMax(Game g, int depth, bool maximizingPlayer)
     //{
-    //    if(depth == 0 || board)
+    //    if (depth == 0 || board)
     //}
 }
 

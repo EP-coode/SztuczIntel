@@ -15,6 +15,6 @@ public abstract class Player
         PlayerPieceColor = color;
     }
 
-    public abstract Move MakeMove(Board b);
+    public abstract Move MakeMove(Game g);
 }
 

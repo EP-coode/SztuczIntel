@@ -14,8 +14,9 @@ public class RandomPlayer : Player
     {
     }
 
-    public override Move MakeMove(Board b)
+    public override Move MakeMove(Game g)
     {
+        var b = g.GameBoard;
         var moves = b.GetAllPossibleMoves(PlayerPieceColor);
         int index = rnd.Next(moves.Count);
         Console.WriteLine(moves[index]);

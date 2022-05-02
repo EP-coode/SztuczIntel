@@ -15,7 +15,7 @@ Game game = new Game();
 while (!game.IsFinished())
 {
     Console.WriteLine(game.GameBoard);
-    var move = players[game.MovingPlayer].MakeMove(game.GameBoard);
+    var move = players[game.MovingPlayer].MakeMove(game);
     game.NextMove(move);
 }
 Console.WriteLine("KONIEC");
