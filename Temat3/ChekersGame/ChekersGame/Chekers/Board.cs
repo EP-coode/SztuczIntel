@@ -167,9 +167,6 @@ public class Board
         else
             captures = board.GetCapturesForPiece(src_row, src_col, movingPiece);
 
-        if (depth > 100 && captures.Count() > 0)
-            Console.WriteLine("BOOM");
-
         if (captures.Count() > 0)
         {
             foreach (Move move in captures)

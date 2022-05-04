@@ -19,7 +19,6 @@ public class RandomPlayer : Player
         var b = g.GameBoard;
         var moves = b.GetAllPossibleMoves(PlayerPieceColor);
         int index = rnd.Next(moves.Count);
-        Console.WriteLine(moves[index]);
         return moves[index];    
     }
 }

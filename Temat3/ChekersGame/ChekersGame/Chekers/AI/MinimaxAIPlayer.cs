@@ -50,8 +50,8 @@ public class MinimaxAIPlayer : Player
                 }
                 alpha = Math.Max(alpha, maxEval);
 
-                //if (maxEval >= beta)
-                //    break;
+                if (maxEval >= beta)
+                    break;
             }
 
             return (maxEval, bestMove);
@@ -75,8 +75,8 @@ public class MinimaxAIPlayer : Player
 
                 beta = Math.Max(beta, minEval);
 
-                //if (minEval <= alpha)
-                //    break;
+                if (minEval <= alpha)
+                    break;
 
             }
 
