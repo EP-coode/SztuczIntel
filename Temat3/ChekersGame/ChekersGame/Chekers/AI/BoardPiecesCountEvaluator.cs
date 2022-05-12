@@ -8,7 +8,7 @@ using ChekersGame.Chekers;
 
 namespace ChekersGame.Chekers.AI;
 
-public class BoardPiecesCount : IEvaluator<Board, Move, PieceColor>
+public class BoardPiecesCountEvaluator : IEvaluator<Board, Move, PieceColor>
 {
     public const int PAWN_SCORE = 1;
     public const int KING_SCORE = 3;
