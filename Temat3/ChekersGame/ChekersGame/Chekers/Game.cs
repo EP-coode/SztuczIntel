@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ChekersGame.MiniMax;
 
 namespace ChekersGame.Chekers;
 
-public class Game
+public class Game : IMiniMaxGame<Board, Move, PieceColor>
 {
-    public const int MAX_NO_OF_KINGS_MOVES = 10;
+    public const int MAX_NO_OF_KINGS_MOVES = 15;
 
     private PieceColor _movingPlayer;
     private List<Move> _currentPlayerAvalibleMoves;
@@ -39,7 +40,7 @@ public class Game
         _currentPlayerAvalibleMoves = g._currentPlayerAvalibleMoves;
     }
 
-    public void NextMove(Move playerMove)
+    public void ApplyMove(Move playerMove)
     {
         if (IsFinished())
             throw new InvalidOperationException("This game is finished");
@@ -90,5 +91,25 @@ public class Game
             _movingPlayer = PieceColor.BLACK;
         else
             _movingPlayer = PieceColor.WHITE;
+    }
+
+    public IMiniMaxGame<Board, Move, PieceColor> Clone()
+    {
+        return new Game(this);
+    }
+
+    public List<Move> GetMoves()
+    {
+        return _currentPlayerAvalibleMoves;
+    }
+
+    public Board GetState()
+    {
+        return GameBoard;
+    }
+
+    public PieceColor GetCurrentPlayer()
+    {
+        return MovingPlayer;
     }
 }
