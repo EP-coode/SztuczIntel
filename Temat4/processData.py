@@ -5,84 +5,78 @@ from bookValidators import books_containing_genres, description_longer_than, no_
 from dataLoader import load_all_books_from_file
 import os
 import shutil
-# from sklearn.feature_extraction.text import TfidfTransformer
-# from sklearn.model_selection import train_test_split
+import matplotlib.pyplot as plt
 
-import re
-from nltk.stem import WordNetLemmatizer
-# nltk.download('stopwords')
-# nltk.download('wordnet')
-# nltk.download('omw-1.4')
-
-stemmer = WordNetLemmatizer()
-
-
-def prepare_document(doc):
-   # Remove all the special characters
-    document = re.sub(r'\W', ' ', str(doc))
-
-    # remove all single characters
-    document = re.sub(r'\s+[a-zA-Z]\s+', ' ', document)
-
-    # Remove single characters from the start
-    document = re.sub(r'\^[a-zA-Z]\s+', ' ', document)
-
-    # Substituting multiple spaces with single space
-    document = re.sub(r'\s+', ' ', document, flags=re.I)
-
-    # Removing prefixed 'b'
-    document = re.sub(r'^b\s+', '', document)
-
-    # Converting to Lowercase
-    document = document.lower()
-
-    # Lemmatization
-    document = document.split()
-
-    document = [stemmer.lemmatize(word) for word in document]
-    document = ' '.join(document)
-
-    return document
-
+from dataPreprocesing import prepare_document
 
 book_shelf: BookShelf = load_all_books_from_file("./dataset/booksummaries.txt")
 
-print(f"Input records count - {len(book_shelf.books)}")
+books_count = len(book_shelf.books)
+all_genres = list(book_shelf.get_genres_count().keys())
+
+print(f"Input records count - {books_count}")
 print(f"Processing...")
 
-book_shelf.remove_unvalid_books(description_longer_than(300))
-book_shelf.remove_unvalid_books(no_books_with_genres_count_more_than(3))
+MAX_GENRES = 3
+MIN_SUMMARY_LEN = 50
+GENRES_TO_SELECT = ["Science Fiction",
+                    "Children's literature", "Novel", "Crime Fiction", "Historical novel"]
+# remove bad quality data
 
-book_shelf.merge_genres('Speculative fiction', 'Fiction')
-book_shelf.merge_genres('Science Fiction', 'Fiction')
-book_shelf.remove_genres('Fiction')
+print(f"Removing books with genres count more than {MAX_GENRES}")
+book_shelf.remove_unvalid_books(
+  no_books_with_genres_count_more_than(MAX_GENRES))
+print(f"Removed {books_count - len(book_shelf.books)} books")
+books_count = len(book_shelf.books)
 
+print(f"Removing books with summary shorter than {MIN_SUMMARY_LEN}")
+book_shelf.remove_unvalid_books(description_longer_than(MIN_SUMMARY_LEN))
+print(f"Removed {books_count - len(book_shelf.books)} books")
+books_count = len(book_shelf.books)
+
+# plot genres
+print("Showing top 8 book genres count")
 genres_cout = book_shelf.get_genres_count()
-genres_cout = sorted(genres_cout.items(),
-                     key=lambda item: item[1], reverse=True)
+genres_cout = dict(sorted(genres_cout.items(),
+                          key=lambda item: item[1], reverse=True)[0:8])
+plt.bar(range(len(genres_cout)), list(genres_cout.values()), align='center')
+plt.xticks(range(len(genres_cout)), list(genres_cout.keys()))
+plt.show()
 
-top_genres = list(map(lambda item: item[0], genres_cout[0:5]))
-not_qualified_genres = list(map(lambda item: item[0], genres_cout[5:-1]))
+# remove unnecesary genres
+not_qualified_genres = list(
+  filter(lambda a: a not in GENRES_TO_SELECT, all_genres))
 
-book_shelf.remove_unvalid_books(books_containing_genres(top_genres))
+book_shelf.remove_unvalid_books(books_containing_genres(GENRES_TO_SELECT))
 
 for g in not_qualified_genres:
-    book_shelf.remove_genres(g)
+  book_shelf.remove_genres(g)
 
-book_shelf.remove_genres('Fairytale fantasy')
+print("Showing selected genres count")
+genres_cout = book_shelf.get_genres_count()
+genres_cout = dict(sorted(genres_cout.items(),
+                          key=lambda item: item[1], reverse=True))
+plt.bar(range(len(genres_cout)), list(genres_cout.values()), align='center')
+plt.xticks(range(len(genres_cout)), list(genres_cout.keys()))
+plt.show()
+
+
+# save results
+print(f"Output records: {len(book_shelf.books)}")
+print("Saving...")
 
 books_by_category = book_shelf.get_books_grouped_by_category()
 
 OUT_DIR = 'output'
 
 if os.path.exists(OUT_DIR):
-    shutil.rmtree(OUT_DIR)
+  shutil.rmtree(OUT_DIR)
 
 os.mkdir(OUT_DIR)
 
 for category in books_by_category.keys():
-    os.mkdir(f"{OUT_DIR}/{category}")
-    for book in books_by_category[category]:
-        with open(f"{OUT_DIR}/{category}/{book.id}", "w", encoding="UTF-8") as file:
-            file.write(prepare_document(book.description))
-            file.close()
+  os.mkdir(f"{OUT_DIR}/{category}")
+  for book in books_by_category[category]:
+    with open(f"{OUT_DIR}/{category}/{book.id}", "w", encoding="UTF-8") as file:
+      file.write(prepare_document(book.description))
+      file.close()
