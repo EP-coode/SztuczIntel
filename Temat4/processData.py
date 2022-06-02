@@ -18,7 +18,7 @@ print(f"Input records count - {books_count}")
 print(f"Processing...")
 
 MAX_GENRES = 3
-MIN_SUMMARY_LEN = 50
+MIN_SUMMARY_LEN = 100
 GENRES_TO_SELECT = ["Science Fiction",
                     "Children's literature", "Novel", "Crime Fiction", "Historical novel"]
 # remove bad quality data
