@@ -18,9 +18,42 @@ plt.xticks(x_axis, x, rotation=20)
 plt.legend()
 plt.show()
 
+# ========================
+
+df = pd.read_csv("./results/alpha.csv")
+x = df['model'].to_numpy()
+best = df['best_score'].to_numpy()
+worst = df['worst_score'].to_numpy()
+
+x_axis = np.arange(len(x))
+
+plt.plot(x_axis, best, label='Best', color="g")
+plt.plot(x_axis, worst, label='Worst', color="r")
+
+plt.xticks(x_axis, x, rotation=20)
+plt.legend()
+plt.show()
+
+# ========================
+
+df = pd.read_csv("./results/kernels.csv")
+x = df['model'].to_numpy()
+best = df['best_score'].to_numpy()
+worst = df['worst_score'].to_numpy()
+
+x_axis = np.arange(len(x))
+
+plt.bar(x_axis, best, label='Best', color="g")
+plt.bar(x_axis, worst, label='Worst', color="r")
+
+plt.xticks(x_axis, x, rotation=20)
+plt.legend()
+plt.show()
+
+# ======================
 
 df = pd.read_csv("./results/features_count.csv")
-x = df['max_features'].to_numpy()
+x = df['fatures_after_selection'].to_numpy()
 best = df['best_score'].to_numpy()
 worst = df['worst_score'].to_numpy()
 
