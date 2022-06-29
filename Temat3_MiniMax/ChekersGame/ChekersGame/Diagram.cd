@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="ChekersGame.Chekers.AI.MiniMaxPlayer" Collapsed="true">
+    <Position X="2.25" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAQAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAA=</HashCode>
+      <FileName>Chekers\AI\MiniMaxPlayer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ChekersGame.Chekers.Board" Collapsed="true">
+    <Position X="8" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAACsACAAAAAECAAIIAQgAAAAIwAAAAAAAAAAEAQ=</HashCode>
+      <FileName>Chekers\Board.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ChekersGame.Chekers.Game" Collapsed="true">
+    <Position X="6" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAEAIAgABBAAAAAQCAAgAAAAAAAAIRAAAAAAKADA=</HashCode>
+      <FileName>Chekers\Game.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ChekersGame.Chekers.Move" Collapsed="true">
+    <Position X="9.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAIAAACAAAAAAIAEgQAAgBQAAAAAAAAAAACAAgAAAAA=</HashCode>
+      <FileName>Chekers\Move.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ChekersGame.MiniMax.MiniMax&lt;T, M, P&gt;" Collapsed="true">
+    <Position X="0.5" Y="1.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAAgAAAAAAACAAAAAAAAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>MiniMax\MiniMax.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ChekersGame.MiniMax.MiniMaxAlphaBeta&lt;T, M, P&gt;" Collapsed="true">
+    <Position X="0.5" Y="2.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAAgAAAAAAACAAAAAAAAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>MiniMax\MiniMaxAlphaBeta.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ChekersGame.Chekers.AI.BoardPiecesCountEvaluator" Collapsed="true">
+    <Position X="3" Y="1.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAgAAAAAQAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Chekers\AI\BoardPiecesCountEvaluator.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ChekersGame.Chekers.AI.BoardZonesEvaluatorcs" Collapsed="true">
+    <Position X="3" Y="2.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAEAAAAQAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Chekers\AI\BoardZonesEvaluatorcs.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="ChekersGame.Chekers.Players.ConsolePlayer" Collapsed="true">
+    <Position X="0.5" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAA=</HashCode>
+      <FileName>Chekers\Players\ConsolePlayer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ChekersGame.Chekers.Players.RandomPlayer" Collapsed="true">
+    <Position X="4" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAA=</HashCode>
+      <FileName>Chekers\Players\RandomPlayer.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ChekersGame.Chekers.Player" Collapsed="true">
+    <Position X="2.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAABAAAAAAAAAAAAAAgAAAAAAAAAAAAA=</HashCode>
+      <FileName>Chekers\Player.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Interface Name="ChekersGame.MiniMax.IMiniMaxGame&lt;T, M, P&gt;" Collapsed="true">
+    <Position X="6" Y="0.5" Width="2.75" />
+    <TypeIdentifier>
+      <HashCode>AAIAAEAAAgAAAAAAAAQAAAAAAAAAAAAABAAAAAAAABA=</HashCode>
+      <FileName>MiniMax\IMiniMaxGame.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ChekersGame.MiniMax.IMiniMax&lt;T, M, P&gt;" Collapsed="true">
+    <Position X="0.5" Y="0.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAIAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>MiniMax\IMiniMax.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="ChekersGame.MiniMax.IEvaluator&lt;T, M, P&gt;" Collapsed="true">
+    <Position X="3" Y="0.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>MiniMax\IEvaluator.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

@@ -1,3 +1,0 @@
-* art: "the better lesson" R.Satton
-* AI modern approach ~Russel ch5.1 - 5.4
-* CS221 (2019) - YouTube wykład 9 (mini max a b)

@@ -15,9 +15,9 @@ using System.Diagnostics;
 
     while (!game.IsFinished())
     {
-        //Console.WriteLine(game.GameBoard);
+        Console.WriteLine(game.GameBoard);
         var move = players[game.MovingPlayer].MakeMove(game);
-        //Console.WriteLine($"GRACZ {game.MovingPlayer} robi róch: {move}\n");
+        Console.WriteLine($"GRACZ {game.MovingPlayer} robi róch: {move}\n");
         game.ApplyMove(move);
     }
     stopwatch.Stop();
@@ -56,7 +56,7 @@ List<(IEvaluator<Board, Move, PieceColor>, double)> evaluators2 =
 
 Dictionary<PieceColor, Player> playerSet1 = new()
 {
-    { PieceColor.WHITE, new RandomPlayer(PieceColor.WHITE) },
+    { PieceColor.WHITE, new ConsolePlayer(PieceColor.WHITE) },
     { PieceColor.BLACK, new MiniMaxPlayer(PieceColor.BLACK, evaluators, 3) }
 };
 

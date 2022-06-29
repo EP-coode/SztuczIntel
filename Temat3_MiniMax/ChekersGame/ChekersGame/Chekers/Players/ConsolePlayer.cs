@@ -32,8 +32,9 @@ public class ConsolePlayer : Player
             string input = Console.ReadLine();
             if (input is not null)
             {
-                bool rowOk = int.TryParse(input[0].ToString(), out row);
-                bool colOk = int.TryParse(input[1].ToString(), out col);
+                string [] tkenizedInput = input.Split(' ');
+                bool rowOk = int.TryParse(tkenizedInput[0].ToString(), out row);
+                bool colOk = int.TryParse(tkenizedInput[1].ToString(), out col);
                 if (rowOk && colOk && b[row, col] != null && b[row, col].PieceColor == PlayerPieceColor)
                 {
                     moves = b.GetAllPossibleMoves(b[row, col]);
